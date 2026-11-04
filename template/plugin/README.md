@@ -1,6 +1,6 @@
 # Шаблон UI-плагина DSH
 
-Скопируй каталог в `C:/projects/!DeepseekPlugins/plugins/dsh-<name>/` и замени:
+Скопируй каталог в `C:/projects/DeepseekPlugins/plugins/dsh-<name>/` и замени:
 
 1. `package.json`: `name` -> `@local/dsh-<name>`, `description`, `inject`.
 2. `cordis.patch.yml`: `id` -> `<name>`, `name` -> `@local/dsh-<name>`.
@@ -12,5 +12,5 @@
 
 ```text
 node --check client.js
-plugin_manager install_bundle target=C:/projects/!DeepseekPlugins/plugins/dsh-<name>
+plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-<name>
 ```

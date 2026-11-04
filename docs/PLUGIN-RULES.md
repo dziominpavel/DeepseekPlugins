@@ -7,8 +7,8 @@
 
 | Что | Где | Почему |
 |---|---|---|
-| Исходники плагина | `C:/projects/!DeepseekPlugins/plugins/<name>/` | одно место, git, не теряется при сносе приложения и проектов |
-| Шаблон | `C:/projects/!DeepseekPlugins/template/plugin/` | одинаковый скелет у всех плагинов |
+| Исходники плагина | `C:/projects/DeepseekPlugins/plugins/<name>/` | одно место, git, не теряется при сносе приложения и проектов |
+| Шаблон | `C:/projects/DeepseekPlugins/template/plugin/` | одинаковый скелет у всех плагинов |
 | Состояние профиля | `~/.dsh/profiles/<profile>/package.json` и `cordis.patch.yml` | глобально, не в проекте |
 | Само приложение | `%LOCALAPPDATA%/Programs/DeepSeek Harness/` | только для чтения: обновление заменяет `resources` |
 
@@ -47,7 +47,7 @@ README.md           что делает, как собрать, как вклю�
 ## 4. Установка
 
 ```text
-plugin_manager install_bundle target=C:/projects/!DeepseekPlugins/plugins/dsh-<name>
+plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-<name>
 ```
 
 Установка идёт **в текущий профиль**; менеджер не меняет другой профиль. Профили
@@ -59,14 +59,14 @@ plugin_manager install_bundle target=C:/projects/!DeepseekPlugins/plugins/dsh-<n
 
 - Правка `client.js` -> переустановка + перезапуск DSH (новое поколение JS-модулей).
 - Перенос/переименование каталога -> junction в профиле битый; лечится
-  `C:/projects/!DeepseekPlugins/install.ps1 -Fix`, затем перезапуск.
+  `C:/projects/DeepseekPlugins/install.ps1 -Fix`, затем перезапуск.
 - Смена версии -> поднять `version` в `package.json`, переустановить.
 
 ## 6. Проверка после установки
 
 ```powershell
-C:/projects/!DeepseekPlugins/install.ps1            # только проверка
-C:/projects/!DeepseekPlugins/install.ps1 -Fix       # починить манифест, lock и junction
+C:/projects/DeepseekPlugins/install.ps1            # только проверка
+C:/projects/DeepseekPlugins/install.ps1 -Fix       # починить манифест, lock и junction
 ```
 
 Скрипт сверяет для каждого профиля: зависимость `link:` в `package.json`,
