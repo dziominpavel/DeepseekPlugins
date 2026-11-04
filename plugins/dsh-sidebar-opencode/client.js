@@ -71,23 +71,59 @@ window.__ModuleLoader__.load({
       return new Date(value).toLocaleDateString('ru-RU');
     }
 
+    var audioContext = null;
+
+    function ensureAudioContext() {
+      try {
+        var Ctor = window.AudioContext || window.webkitAudioContext;
+        if (!Ctor) return null;
+        if (!audioContext) audioContext = new Ctor();
+        if (audioContext.state === 'suspended' && audioContext.resume) {
+          audioContext.resume().catch(function () {});
+        }
+        return audioContext;
+      } catch (error) {
+        console.warn('sidebar-opencode: AudioContext недоступен:', error);
+        return null;
+      }
+    }
+
     function playChime(box, src) {
+      var context = ensureAudioContext();
+      if (context) {
+        try {
+          var start = context.currentTime + 0.02;
+          var notes = [{ at: 0, freq: 1046.5, gain: 0.9 }, { at: 0.13, freq: 1568.0, gain: 0.8 }];
+          notes.forEach(function (note) {
+            var oscillator = context.createOscillator();
+            var gain = context.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = note.freq;
+            var begin = start + note.at;
+            gain.gain.setValueAtTime(0.0001, begin);
+            gain.gain.exponentialRampToValueAtTime(note.gain, begin + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.0001, begin + 0.34);
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(begin);
+            oscillator.stop(begin + 0.36);
+          });
+          return;
+        } catch (error) {
+          console.warn('sidebar-opencode: WebAudio не сработал:', error);
+        }
+      }
       try {
         if (!box.current) {
           box.current = new Audio(src);
           box.current.preload = 'auto';
           box.current.volume = 1;
         }
-        var audio = box.current;
-        audio.currentTime = 0;
-        var played = audio.play();
-        if (played && played.catch) {
-          played.catch(function (reason) {
-            console.warn('sidebar-opencode: не удалось воспроизвести звук:', reason && reason.message ? reason.message : reason);
-          });
-        }
+        box.current.currentTime = 0;
+        var played = box.current.play();
+        if (played && played.catch) played.catch(function () {});
       } catch (error) {
-        console.warn('sidebar-opencode: звук недоступен:', error);
+        console.warn('sidebar-opencode: аудио недоступно:', error);
       }
     }
 
@@ -156,7 +192,9 @@ window.__ModuleLoader__.load({
         '.dshoc-check { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }',
         '.dshoc-check input { margin: 0; cursor: pointer; }',
         '.dshoc-test { margin-top: 2px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: inherit; border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; }',
-        '.dshoc-test:hover { background: rgba(127,127,127,.22); }'
+        '.dshoc-test:hover { background: rgba(127,127,127,.22); }',
+        '.dshoc-diag { font-size: 10.5px; opacity: .5; }',
+        '.dshoc-sep { margin: 6px 0 2px 22px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .45; }'
       ].join('\n');
       document.head.appendChild(style);
     }
@@ -283,8 +321,9 @@ window.__ModuleLoader__.load({
           h('button', {
             className: 'dshoc-test',
             key: 'test',
-            onClick: function () { playChime(audioBox, SOUND_SRC); }
-          }, 'Проверить звук')
+            onClick: function () { playChime(audioBox, SOUND_SRC); bump(version + 1); }
+          }, 'Проверить звук'),
+          h('div', { className: 'dshoc-diag', key: 'diag' }, 'AudioContext: ' + (audioContext ? audioContext.state : 'не создан'))
         ));
       }
 
@@ -323,6 +362,7 @@ window.__ModuleLoader__.load({
 
         var memberIds = (workspace.sessionIds || []).slice();
         var rows = [];
+        var archivedRows = [];
         orderedIds(memberIds, orderBox.current[key]).forEach(function (id) {
           var session = byId[id];
           if (!session || session.blank) return;
@@ -340,7 +380,7 @@ window.__ModuleLoader__.load({
           else if (done) indicator = h('span', { className: 'dshoc-dot', style: { background: '#46a758' } });
           else indicator = h('span', { className: 'dshoc-dot', style: { background: 'transparent' } });
 
-          rows.push(h('div', {
+          (isArchived ? archivedRows : rows).push(h('div', {
             key: id,
             className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : ''),
             draggable: !isArchived,
@@ -399,7 +439,12 @@ window.__ModuleLoader__.load({
           ));
         });
 
-        children.push(h('div', { key: 'ss:' + key, className: 'dshoc-sessions' }, rows));
+        var groupRows = rows.slice();
+        if (archivedRows.length) {
+          groupRows.push(h('div', { key: 'sep', className: 'dshoc-sep' }, 'архив'));
+          groupRows = groupRows.concat(archivedRows);
+        }
+        children.push(h('div', { key: 'ss:' + key, className: 'dshoc-sessions' }, groupRows));
       });
 
       return h('div', { className: 'dshoc-root' }, children);
