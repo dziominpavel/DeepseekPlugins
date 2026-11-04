@@ -233,7 +233,7 @@ window.__ModuleLoader__.load({
         '.dshoc-panel { box-sizing: border-box; align-self: stretch; margin: 2px 0 6px; background: #202024; color: #e7e7ea; border: 1px solid rgba(127,127,127,.22); border-radius: 8px; padding: 9px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }',
         '.dshoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }',
         '.dshoc-check input { margin: 0; width: 14px; height: 14px; cursor: pointer; accent-color: #4aa3ff; }',
-        '.dshoc-test { width: 100%; margin-top: 2px; border: 1px solid rgba(127,127,127,.24); background: rgba(127,127,127,.1); color: inherit; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; cursor: pointer; text-align: center; }',
+        '.dshoc-test { display: block; box-sizing: border-box; align-self: stretch; margin-top: 2px; border: 1px solid rgba(127,127,127,.24); background: rgba(127,127,127,.1); color: inherit; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; cursor: pointer; text-align: center; }',
         '.dshoc-test:hover { background: rgba(127,127,127,.2); }',
         '.dshoc-diag { font-size: 10.5px; opacity: .45; }',
 
