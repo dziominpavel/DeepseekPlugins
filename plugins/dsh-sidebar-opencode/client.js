@@ -198,7 +198,7 @@ window.__ModuleLoader__.load({
         '.dshoc-row .dshoc-iconbtn.dshoc-always { visibility: visible; }',
         '.dshoc-ws { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; cursor: pointer; }',
         '.dshoc-ws:hover { background: rgba(127,127,127,.13); }',
-        '.dshoc-chip { width: 18px; height: 18px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; line-height: 1; flex: 0 0 auto; }',
+        '.dshoc-chip { width: 18px; height: 18px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; line-height: 1; color: #fff; flex: 0 0 auto; }',
         '.dshoc-title { flex: 1 1 auto; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
         '.dshoc-add { opacity: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 1px 5px; border-radius: 4px; }',
         '.dshoc-ws:hover .dshoc-add { opacity: .65; }',
@@ -435,7 +435,7 @@ window.__ModuleLoader__.load({
             bump(version + 1);
           }
         },
-          h('span', { className: 'dshoc-chip', style: { color: colorFor(name) } }, initialFor(name)),
+          h('span', { className: 'dshoc-chip', style: { background: colorFor(name) } }, initialFor(name)),
           h('span', { className: 'dshoc-title' }, name),
           h('button', {
             className: 'dshoc-add',
