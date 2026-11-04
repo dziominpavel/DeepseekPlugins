@@ -141,7 +141,7 @@ window.__ModuleLoader__.load({
     }
 
     function iconArchive() {
-      return svg({}, [
+      return svg({ style: { color: '#8ab4f8' } }, [
         h('rect', { key: 'top', x: 3, y: 4, width: 18, height: 4, rx: 1 }),
         h('path', { key: 'body', d: 'M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8' }),
         h('path', { key: 'line', d: 'M10 12h4' })
@@ -149,11 +149,17 @@ window.__ModuleLoader__.load({
     }
 
     function iconRestore() {
+      return svg({ style: { color: '#46a758' } }, [
+        h('path', { key: 'arc', d: 'M21 12a9 9 0 1 1-2.64-6.36' }),
+        h('path', { key: 'head', d: 'M21 3v6h-6' })
+      ]);
+    }
+
+    function iconFolderPlus() {
       return svg({}, [
-        h('path', { key: 'body', d: 'M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8' }),
-        h('rect', { key: 'top', x: 3, y: 4, width: 18, height: 4, rx: 1 }),
-        h('path', { key: 'arrow', d: 'M12 16v-6' }),
-        h('path', { key: 'head', d: 'm9 13 3-3 3 3' })
+        h('path', { key: 'folder', d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
+        h('path', { key: 'plus', d: 'M12 11v6' }),
+        h('path', { key: 'bar', d: 'M9 14h6' })
       ]);
     }
 
@@ -166,10 +172,11 @@ window.__ModuleLoader__.load({
         '.dshoc-root { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 2px 6px 8px; min-height: 0; overflow: auto; }',
         '.dshoc-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 4px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; }',
         '.dshoc-headactions { display: flex; align-items: center; gap: 2px; }',
-        '.dshoc-iconbtn { border: 0; background: transparent; color: inherit; cursor: pointer; padding: 3px; border-radius: 4px; line-height: 0; flex: 0 0 auto; }',
-        '.dshoc-iconbtn:hover { background: rgba(127,127,127,.25); }',
-        '.dshoc-row .dshoc-iconbtn { visibility: hidden; opacity: .6; }',
+        '.dshoc-iconbtn { border: 0; background: transparent; color: inherit; cursor: pointer; padding: 2px; border-radius: 4px; line-height: 0; flex: 0 0 auto; }',
+        '.dshoc-iconbtn:hover { background: rgba(127,127,127,.14); }',
+        '.dshoc-row .dshoc-iconbtn { visibility: hidden; }',
         '.dshoc-row:hover .dshoc-iconbtn { visibility: visible; }',
+        '.dshoc-row .dshoc-iconbtn.dshoc-always { visibility: visible; }',
         '.dshoc-ws { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; cursor: pointer; }',
         '.dshoc-ws:hover { background: rgba(127,127,127,.13); }',
         '.dshoc-chip { width: 18px; height: 18px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; flex: 0 0 auto; }',
@@ -180,10 +187,9 @@ window.__ModuleLoader__.load({
         '.dshoc-sessions { display: flex; flex-direction: column; gap: 1px; padding: 1px 0 3px 4px; }',
         '.dshoc-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 22px; border-radius: 6px; cursor: pointer; font-size: 12.5px; }',
         '.dshoc-row:hover { background: rgba(127,127,127,.13); }',
-        '.dshoc-row.dshoc-archived { opacity: .45; }',
-        '.dshoc-row.dshoc-archived .dshoc-name { font-style: italic; }',
+        '.dshoc-row.dshoc-archived .dshoc-name { opacity: .8; }',
         '.dshoc-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
-        '.dshoc-tag { font-size: 9.5px; letter-spacing: .03em; text-transform: uppercase; padding: 1px 5px; border-radius: 4px; background: rgba(127,127,127,.28); opacity: .85; flex: 0 0 auto; }',
+
         '.dshoc-time { font-size: 11px; opacity: .45; flex: 0 0 auto; }',
         '.dshoc-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }',
         '.dshoc-spin { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(127,127,127,.35); border-top-color: #4aa3ff; animation: dshoc-spin .8s linear infinite; flex: 0 0 auto; }',
@@ -194,7 +200,7 @@ window.__ModuleLoader__.load({
         '.dshoc-test { margin-top: 2px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: inherit; border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; }',
         '.dshoc-test:hover { background: rgba(127,127,127,.22); }',
         '.dshoc-diag { font-size: 10.5px; opacity: .5; }',
-        '.dshoc-sep { margin: 6px 0 2px 22px; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .45; }'
+
       ].join('\n');
       document.head.appendChild(style);
     }
@@ -278,11 +284,29 @@ window.__ModuleLoader__.load({
       var showArchived = archivedBox.current === true;
       var phase = (list && list.phase) || 'loading';
 
+      function addWorkspace() {
+        var pick = props.pickDirectory;
+        var create = props.createWorkspace;
+        if (!pick || !create) return;
+        Promise.resolve().then(pick).then(function (path) {
+          if (!path) return undefined;
+          return create(path);
+        }).catch(function (reason) {
+          console.warn('sidebar-opencode: не удалось добавить проект:', reason);
+        });
+      }
+
       var children = [];
 
       children.push(h('div', { className: 'dshoc-head', key: 'head' },
         h('span', null, 'Проекты'),
         h('span', { className: 'dshoc-headactions', ref: gearRef },
+          h('button', {
+            key: 'addws',
+            className: 'dshoc-iconbtn',
+            title: 'Добавить проект',
+            onClick: function () { addWorkspace(); }
+          }, iconFolderPlus()),
           h('button', {
             key: 'gear',
             className: 'dshoc-iconbtn',
@@ -362,7 +386,6 @@ window.__ModuleLoader__.load({
 
         var memberIds = (workspace.sessionIds || []).slice();
         var rows = [];
-        var archivedRows = [];
         orderedIds(memberIds, orderBox.current[key]).forEach(function (id) {
           var session = byId[id];
           if (!session || session.blank) return;
@@ -380,7 +403,7 @@ window.__ModuleLoader__.load({
           else if (done) indicator = h('span', { className: 'dshoc-dot', style: { background: '#46a758' } });
           else indicator = h('span', { className: 'dshoc-dot', style: { background: 'transparent' } });
 
-          (isArchived ? archivedRows : rows).push(h('div', {
+          rows.push(h('div', {
             key: id,
             className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : ''),
             draggable: !isArchived,
@@ -424,10 +447,9 @@ window.__ModuleLoader__.load({
           },
             indicator,
             h('span', { className: 'dshoc-name' }, session.title || 'Без названия'),
-            isArchived ? h('span', { className: 'dshoc-tag', key: 'tag' }, 'архив') : null,
             h('span', { className: 'dshoc-time' }, relativeTime(session.updatedAt, now)),
             h('button', {
-              className: 'dshoc-iconbtn',
+              className: 'dshoc-iconbtn' + (isArchived ? ' dshoc-always' : ''),
               title: isArchived ? 'Вернуть из архива' : 'В архив',
               onClick: function (event) {
                 event.stopPropagation();
@@ -439,12 +461,7 @@ window.__ModuleLoader__.load({
           ));
         });
 
-        var groupRows = rows.slice();
-        if (archivedRows.length) {
-          groupRows.push(h('div', { key: 'sep', className: 'dshoc-sep' }, 'архив'));
-          groupRows = groupRows.concat(archivedRows);
-        }
-        children.push(h('div', { key: 'ss:' + key, className: 'dshoc-sessions' }, groupRows));
+        children.push(h('div', { key: 'ss:' + key, className: 'dshoc-sessions' }, rows));
       });
 
       return h('div', { className: 'dshoc-root' }, children);
@@ -483,6 +500,13 @@ window.__ModuleLoader__.load({
                 service.archiveSession(sessionId, options || {}).catch(function (reason) {
                   console.warn('session archive rejected:', reason);
                 });
+              },
+              pickDirectory: function () {
+                var service = ctx.get('uiWorkspace');
+                return service ? service.pickDirectory() : Promise.resolve(null);
+              },
+              createWorkspace: function (path) {
+                return workspaces.create({ path: path });
               },
               unarchiveSession: function (sessionId) {
                 var service = ctx.get('uiWorkspace');
