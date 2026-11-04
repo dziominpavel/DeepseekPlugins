@@ -156,14 +156,6 @@ window.__ModuleLoader__.load({
       ]);
     }
 
-    function iconMove() {
-      return svg({ style: { color: '#c8a2ff' } }, [
-        h('path', { key: 'f', d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
-        h('path', { key: 'a', d: 'M9 13h6' }),
-        h('path', { key: 'b', d: 'm12 10 3 3-3 3' })
-      ]);
-    }
-
     function iconFolderPlus() {
       return svg({}, [
         h('path', { key: 'folder', d: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
@@ -207,9 +199,8 @@ window.__ModuleLoader__.load({
         '.dshoc-spin { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid rgba(127,127,127,.35); border-top-color: #4aa3ff; animation: dshoc-spin .8s linear infinite; flex: 0 0 auto; }',
         '.dshoc-empty { padding: 8px 10px; font-size: 12px; opacity: .55; }',
         '.dshoc-moved { font-size: 11px; color: #c8a2ff; flex: 0 0 auto; }',
-        '.dshoc-menu { position: fixed; z-index: 60; min-width: 190px; max-height: 300px; overflow: auto; background: #1b1b20; color: #e7e7ea; border: 1px solid rgba(127,127,127,.3); border-radius: 8px; padding: 4px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }',
-        '.dshoc-menu-item { padding: 5px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
-        '.dshoc-menu-item:hover { background: rgba(127,127,127,.22); }',
+        '.dshoc-ws.dshoc-drop { background: rgba(74,163,255,.2); outline: 1px dashed rgba(74,163,255,.7); outline-offset: -1px; }',
+        '.dshoc-sessions.dshoc-drop-area { background: rgba(74,163,255,.08); border-radius: 6px; }',
         '.dshoc-panel { position: absolute; right: 6px; top: 24px; z-index: 30; min-width: 190px; background: #1b1b20; color: #e7e7ea; border: 1px solid rgba(127,127,127,.3); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }',
         '.dshoc-check { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }',
         '.dshoc-check input { margin: 0; cursor: pointer; }',
@@ -254,28 +245,16 @@ window.__ModuleLoader__.load({
       if (archivedBox.current === null) archivedBox.current = readJson(ARCHIVED_KEY, false);
       var movedBox = React.useRef(null);
       if (movedBox.current === null) movedBox.current = readJson(MOVED_KEY, {});
-      var menuState = React.useState(null);
-      var moveMenu = menuState[0];
-      var setMoveMenu = menuState[1];
 
       var panelRef = React.useRef(null);
-      var menuRef = React.useRef(null);
       var gearRef = React.useRef(null);
       var audioBox = React.useRef(null);
       var previousStatus = React.useRef(null);
       var dragId = React.useRef(null);
       var dragWorkspace = React.useRef(null);
-
-      React.useEffect(function () {
-        if (!moveMenu) return;
-        function onMenuDown(event) {
-          var menu = menuRef.current;
-          if (menu && menu.contains(event.target)) return;
-          setMoveMenu(null);
-        }
-        document.addEventListener('mousedown', onMenuDown);
-        return function () { document.removeEventListener('mousedown', onMenuDown); };
-      }, [moveMenu]);
+      var dropState = React.useState(null);
+      var dropTarget = dropState[0];
+      var setDropTarget = dropState[1];
 
       React.useEffect(function () {
         if (!panelOpen) return;
@@ -408,8 +387,30 @@ window.__ModuleLoader__.load({
 
         children.push(h('div', {
           key: 'ws:' + key,
-          className: 'dshoc-ws',
+          className: 'dshoc-ws' + (dropTarget === key ? ' dshoc-drop' : ''),
           title: workspace.path || name,
+          onDragOver: function (event) {
+            if (!dragId.current) return;
+            event.preventDefault();
+            if (dropTarget !== key) setDropTarget(key);
+          },
+          onDragLeave: function (event) {
+            if (event.currentTarget.contains(event.relatedTarget)) return;
+            if (dropTarget === key) setDropTarget(null);
+          },
+          onDrop: function (event) {
+            event.preventDefault();
+            var sessionId = dragId.current;
+            var fromWorkspace = dragWorkspace.current;
+            dragId.current = null;
+            dragWorkspace.current = null;
+            setDropTarget(null);
+            if (!sessionId || fromWorkspace === key) return;
+            if (owners[sessionId] === key) delete movedBox.current[sessionId];
+            else movedBox.current[sessionId] = key;
+            writeJson(MOVED_KEY, movedBox.current);
+            bump(version + 1);
+          },
           onClick: function () {
             expandBox.current[key] = !expanded;
             writeJson(EXPAND_KEY, expandBox.current);
@@ -465,14 +466,31 @@ window.__ModuleLoader__.load({
               }
             },
             onDragOver: function (event) {
-              if (!isArchived && dragWorkspace.current === key) event.preventDefault();
+              if (!isArchived && dragId.current) event.preventDefault();
+            },
+            onDragEnd: function () {
+              dragId.current = null;
+              dragWorkspace.current = null;
+              setDropTarget(null);
             },
             onDrop: function (event) {
               event.preventDefault();
               if (isArchived) return;
               var from = dragId.current;
               var to = id;
-              if (!from || from === to || dragWorkspace.current !== key) return;
+              var fromWorkspace = dragWorkspace.current;
+              if (!from) return;
+              if (fromWorkspace !== key) {
+                dragId.current = null;
+                dragWorkspace.current = null;
+                setDropTarget(null);
+                if (owners[from] === key) delete movedBox.current[from];
+                else movedBox.current[from] = key;
+                writeJson(MOVED_KEY, movedBox.current);
+                bump(version + 1);
+                return;
+              }
+              if (from === to) return;
               var currentOrder = orderedIds(memberIds, orderBox.current[key]).filter(function (candidate) {
                 var s = byId[candidate];
                 return s && !s.blank && archivedIds.indexOf(candidate) < 0;
@@ -501,16 +519,6 @@ window.__ModuleLoader__.load({
               title: 'Строка показана здесь вручную; рабочий каталог сессии не менялся'
             }, '⇢') : null,
             h('span', { className: 'dshoc-time' }, relativeTime(session.updatedAt, now)),
-            items.length > 1 ? h('button', {
-              key: 'move',
-              className: 'dshoc-iconbtn',
-              title: 'Показать в другом проекте',
-              onClick: function (event) {
-                event.stopPropagation();
-                var rect = event.currentTarget.getBoundingClientRect();
-                setMoveMenu({ sessionId: id, x: rect.left, y: rect.bottom + 4 });
-              }
-            }, iconMove()) : null,
             h('button', {
               className: 'dshoc-iconbtn' + (isArchived ? ' dshoc-always' : ''),
               title: isArchived ? 'Вернуть из архива' : 'В архив',
@@ -524,45 +532,29 @@ window.__ModuleLoader__.load({
           ));
         });
 
-        children.push(h('div', { key: 'ss:' + key, className: 'dshoc-sessions' }, rows));
-      });
-
-      if (moveMenu) {
-        var menuTarget = movedMap[moveMenu.sessionId] || owners[moveMenu.sessionId];
-        var menuOptions = items.filter(function (candidate) { return candidate.workspaceId !== menuTarget; });
-        var menuRows = menuOptions.map(function (candidate) {
-          var label = candidate.title || candidate.path || 'Проект';
-          return h('div', {
-            key: 'opt:' + candidate.workspaceId,
-            className: 'dshoc-menu-item',
-            onClick: function () {
-              movedBox.current[moveMenu.sessionId] = candidate.workspaceId;
-              writeJson(MOVED_KEY, movedBox.current);
-              setMoveMenu(null);
-              bump(version + 1);
-            }
-          }, label);
-        });
-        if (movedMap[moveMenu.sessionId]) {
-          menuRows.push(h('div', {
-            key: 'reset',
-            className: 'dshoc-menu-item',
-            onClick: function () {
-              delete movedBox.current[moveMenu.sessionId];
-              writeJson(MOVED_KEY, movedBox.current);
-              setMoveMenu(null);
-              bump(version + 1);
-            }
-          }, 'Вернуть в исходный проект'));
-        }
         children.push(h('div', {
-          key: 'move-menu',
-          className: 'dshoc-menu',
-          ref: menuRef,
-          style: { left: moveMenu.x, top: moveMenu.y },
-          onMouseDown: function (event) { event.stopPropagation(); }
-        }, menuRows));
-      }
+          key: 'ss:' + key,
+          className: 'dshoc-sessions' + (dropTarget === key ? ' dshoc-drop-area' : ''),
+          onDragOver: function (event) {
+            if (!dragId.current) return;
+            event.preventDefault();
+            if (dropTarget !== key) setDropTarget(key);
+          },
+          onDrop: function (event) {
+            event.preventDefault();
+            var sessionId = dragId.current;
+            var fromWorkspace = dragWorkspace.current;
+            dragId.current = null;
+            dragWorkspace.current = null;
+            setDropTarget(null);
+            if (!sessionId || fromWorkspace === key) return;
+            if (owners[sessionId] === key) delete movedBox.current[sessionId];
+            else movedBox.current[sessionId] = key;
+            writeJson(MOVED_KEY, movedBox.current);
+            bump(version + 1);
+          }
+        }, rows));
+      });
 
       return h('div', { className: 'dshoc-root' }, children);
     }
