@@ -180,6 +180,18 @@ window.__ModuleLoader__.load({
       ]);
     }
 
+    function iconButton(props, children) {
+      var merged = Object.assign({ role: 'button', tabIndex: 0 }, props);
+      var action = merged.onClick;
+      merged.onKeyDown = function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          if (action) action(event);
+        }
+      };
+      return h.apply(null, ['span', merged].concat(children === undefined ? [] : [children]));
+    }
+
     function ensureStyles() {
       if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
       var style = document.createElement('style');
@@ -189,9 +201,10 @@ window.__ModuleLoader__.load({
         '.dshoc-root { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 2px 6px 8px; min-height: 0; overflow: auto; }',
         '.dshoc-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 4px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; }',
         '.dshoc-headactions { display: flex; align-items: center; gap: 2px; }',
-        '.dshoc-iconbtn { border: 0; background: transparent; color: inherit; cursor: pointer; padding: 2px; border-radius: 4px; line-height: 0; flex: 0 0 auto; opacity: .62; }',
+        '.dshoc-iconbtn { display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: inherit; cursor: pointer; padding: 3px; border-radius: 4px; line-height: 0; flex: 0 0 auto; opacity: .62; }',
         '.dshoc-iconbtn:hover { opacity: 1; background: rgba(127,127,127,.12); }',
-        '.dshoc-head .dshoc-iconbtn { opacity: .55; }',
+        '.dshoc-head .dshoc-iconbtn { opacity: .55; padding: 4px; }',
+        '.dshoc-head .dshoc-iconbtn svg { width: 18px; height: 18px; }',
         '.dshoc-head .dshoc-iconbtn:hover { opacity: 1; }',
         '.dshoc-row .dshoc-iconbtn { visibility: hidden; }',
         '.dshoc-row:hover .dshoc-iconbtn { visibility: visible; }',
@@ -200,7 +213,7 @@ window.__ModuleLoader__.load({
         '.dshoc-ws:hover { background: rgba(127,127,127,.13); }',
         '.dshoc-chip { width: 18px; height: 18px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; line-height: 1; color: #fff; flex: 0 0 auto; }',
         '.dshoc-title { flex: 1 1 auto; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
-        '.dshoc-add { opacity: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 1px 5px; border-radius: 4px; }',
+        '.dshoc-add { display: inline-flex; align-items: center; justify-content: center; opacity: 0; border: 0; background: transparent; color: inherit; cursor: pointer; font-size: 15px; line-height: 1; padding: 1px 5px; border-radius: 4px; }',
         '.dshoc-ws:hover .dshoc-add { opacity: .65; }',
         '.dshoc-add:hover { opacity: 1; background: rgba(127,127,127,.22); }',
         '.dshoc-sessions { display: flex; flex-direction: column; gap: 1px; padding: 1px 0 3px 4px; }',
@@ -222,7 +235,7 @@ window.__ModuleLoader__.load({
         '.dshoc-panel { position: absolute; right: 6px; top: 24px; z-index: 30; min-width: 190px; background: #1b1b20; color: #e7e7ea; border: 1px solid rgba(127,127,127,.3); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }',
         '.dshoc-check { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }',
         '.dshoc-check input { margin: 0; cursor: pointer; }',
-        '.dshoc-test { margin-top: 2px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: inherit; border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; }',
+        '.dshoc-test { display: inline-block; margin-top: 2px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: inherit; border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; }',
         '.dshoc-test:hover { background: rgba(127,127,127,.22); }',
         '.dshoc-diag { font-size: 10.5px; opacity: .5; }',
 
@@ -344,13 +357,13 @@ window.__ModuleLoader__.load({
       children.push(h('div', { className: 'dshoc-head', key: 'head' },
         h('span', null, 'Проекты'),
         h('span', { className: 'dshoc-headactions', ref: gearRef },
-          h('button', {
+          iconButton({
             key: 'addws',
             className: 'dshoc-iconbtn',
             title: 'Добавить проект',
             onClick: function () { addWorkspace(); }
           }, iconFolderPlus()),
-          h('button', {
+          iconButton({
             key: 'gear',
             className: 'dshoc-iconbtn',
             title: 'Настройки списка',
@@ -385,7 +398,7 @@ window.__ModuleLoader__.load({
             }),
             h('span', null, 'Показывать архивные')
           ),
-          h('button', {
+          iconButton({
             className: 'dshoc-test',
             key: 'test',
             onClick: function () { playChime(audioBox, SOUND_SRC); bump(version + 1); }
@@ -437,7 +450,7 @@ window.__ModuleLoader__.load({
         },
           h('span', { className: 'dshoc-chip', style: { background: colorFor(name) } }, initialFor(name)),
           h('span', { className: 'dshoc-title' }, name),
-          h('button', {
+          iconButton({
             className: 'dshoc-add',
             title: 'Новая сессия в этом проекте',
             onClick: function (event) {
@@ -537,7 +550,7 @@ window.__ModuleLoader__.load({
               title: 'Строка показана здесь вручную; рабочий каталог сессии не менялся'
             }, '⇢') : null,
             h('span', { className: 'dshoc-time' }, relativeTime(session.updatedAt, now)),
-            h('button', {
+            iconButton({
               className: 'dshoc-iconbtn' + (isArchived ? ' dshoc-always' : ''),
               title: isArchived ? 'Вернуть из архива' : 'В архив',
               onClick: function (event) {
