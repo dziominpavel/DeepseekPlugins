@@ -187,6 +187,9 @@ window.__ModuleLoader__.load({
         '.dshoc-sessions { display: flex; flex-direction: column; gap: 1px; padding: 1px 0 3px 4px; }',
         '.dshoc-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 22px; border-radius: 6px; cursor: pointer; font-size: 12.5px; }',
         '.dshoc-row:hover { background: rgba(127,127,127,.13); }',
+        '.dshoc-row.dshoc-current { background: rgba(74,163,255,.16); box-shadow: inset 2px 0 0 #4aa3ff; }',
+        '.dshoc-row.dshoc-current:hover { background: rgba(74,163,255,.24); }',
+        '.dshoc-row.dshoc-current .dshoc-name { font-weight: 600; }',
         '.dshoc-row.dshoc-archived .dshoc-name { opacity: .8; }',
         '.dshoc-name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
 
@@ -390,6 +393,7 @@ window.__ModuleLoader__.load({
           var session = byId[id];
           if (!session || session.blank) return;
           var isArchived = archivedIds.indexOf(id) >= 0;
+          var isCurrent = !!(session.retainedBy && session.retainedBy.mainView > 0);
           if (isArchived && !showArchived) return;
 
           var status = statuses ? statuses.get(id) : null;
@@ -405,7 +409,7 @@ window.__ModuleLoader__.load({
 
           rows.push(h('div', {
             key: id,
-            className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : ''),
+            className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : '') + (isCurrent ? ' dshoc-current' : ''),
             draggable: !isArchived,
             onDragStart: function (event) {
               if (isArchived) return;
