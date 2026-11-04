@@ -230,7 +230,7 @@ window.__ModuleLoader__.load({
         '.dshoc-moved { font-size: 11px; opacity: .5; flex: 0 0 auto; }',
         '.dshoc-ws.dshoc-drop { background: rgba(74,163,255,.2); outline: 1px dashed rgba(74,163,255,.7); outline-offset: -1px; }',
         '.dshoc-sessions.dshoc-drop-area { background: rgba(74,163,255,.08); border-radius: 6px; }',
-        '.dshoc-panel { z-index: 30; width: 214px; max-height: calc(100vh - 120px); overflow: auto; background: #202024; color: #e7e7ea; border: 1px solid rgba(127,127,127,.22); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; box-shadow: 0 10px 28px rgba(0,0,0,.5); }',
+        '.dshoc-panel { z-index: 30; box-sizing: border-box; max-height: calc(100vh - 120px); overflow: auto; background: #202024; color: #e7e7ea; border: 1px solid rgba(127,127,127,.22); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; box-shadow: 0 10px 28px rgba(0,0,0,.5); }',
         '.dshoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }',
         '.dshoc-check input { margin: 0; width: 14px; height: 14px; cursor: pointer; accent-color: #4aa3ff; }',
         '.dshoc-test { width: 100%; margin-top: 2px; border: 1px solid rgba(127,127,127,.24); background: rgba(127,127,127,.1); color: inherit; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; cursor: pointer; text-align: center; }',
@@ -282,7 +282,8 @@ window.__ModuleLoader__.load({
       if (movedBox.current === null) movedBox.current = readJson(MOVED_KEY, {});
 
       var panelRef = React.useRef(null);
-      var panelPos = React.useRef({ top: 40, right: 10 });
+      var panelPos = React.useRef({ left: 16, top: 40, width: 200 });
+      var rootRef = React.useRef(null);
       var gearRef = React.useRef(null);
       var audioBox = React.useRef(null);
       var previousStatus = React.useRef(null);
@@ -374,10 +375,10 @@ window.__ModuleLoader__.load({
             title: 'Настройки списка',
             onClick: function (event) {
               var rect = event.currentTarget.getBoundingClientRect();
-              panelPos.current = {
-                top: rect.bottom + 6,
-                right: Math.max(8, window.innerWidth - rect.right)
-              };
+              var root = rootRef.current ? rootRef.current.getBoundingClientRect() : null;
+              var left = root ? root.left + 8 : Math.max(8, rect.right - 214);
+              var width = root ? Math.max(170, root.width - 16) : 214;
+              panelPos.current = { left: left, top: rect.bottom + 6, width: width };
               setPanelOpen(!panelOpen);
             }
           }, iconGear())
@@ -389,7 +390,12 @@ window.__ModuleLoader__.load({
           className: 'dshoc-panel',
           key: 'panel',
           ref: panelRef,
-          style: { position: 'fixed', top: panelPos.current.top, right: panelPos.current.right }
+          style: {
+            position: 'fixed',
+            left: panelPos.current.left,
+            top: panelPos.current.top,
+            width: panelPos.current.width
+          }
         },
           h('label', { className: 'dshoc-check', key: 'sound' },
             h('input', {
@@ -604,7 +610,7 @@ window.__ModuleLoader__.load({
         }, rows));
       });
 
-      return h('div', { className: 'dshoc-root' }, children);
+      return h('div', { className: 'dshoc-root', ref: rootRef }, children);
     }
 
     var inject = ['slots', 'locale', 'sessions', 'workspaces', 'uiSession'];
