@@ -1,0 +1,3 @@
+- insert:
+    - id: plugin-template
+      name: '@local/dsh-plugin-template'
