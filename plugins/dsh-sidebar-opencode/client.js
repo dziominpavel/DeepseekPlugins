@@ -193,10 +193,8 @@ window.__ModuleLoader__.load({
     }
 
     function ensureStyles() {
-      if (typeof document === 'undefined' || document.getElementById(STYLE_ID)) return;
-      var style = document.createElement('style');
-      style.id = STYLE_ID;
-      style.textContent = [
+      if (typeof document === 'undefined') return;
+      var css = [
         '@keyframes dshoc-spin { to { transform: rotate(360deg); } }',
         '.dshoc-root { position: relative; display: flex; flex-direction: column; gap: 1px; padding: 2px 6px 8px; min-height: 0; overflow: auto; }',
         '.dshoc-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 4px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; opacity: .55; }',
@@ -232,15 +230,21 @@ window.__ModuleLoader__.load({
         '.dshoc-moved { font-size: 11px; opacity: .5; flex: 0 0 auto; }',
         '.dshoc-ws.dshoc-drop { background: rgba(74,163,255,.2); outline: 1px dashed rgba(74,163,255,.7); outline-offset: -1px; }',
         '.dshoc-sessions.dshoc-drop-area { background: rgba(74,163,255,.08); border-radius: 6px; }',
-        '.dshoc-panel { position: absolute; right: 6px; top: 24px; z-index: 30; min-width: 190px; background: #1b1b20; color: #e7e7ea; border: 1px solid rgba(127,127,127,.3); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.45); }',
-        '.dshoc-check { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }',
-        '.dshoc-check input { margin: 0; cursor: pointer; }',
-        '.dshoc-test { display: inline-block; margin-top: 2px; border: 1px solid rgba(127,127,127,.35); background: rgba(127,127,127,.12); color: inherit; border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; }',
-        '.dshoc-test:hover { background: rgba(127,127,127,.22); }',
-        '.dshoc-diag { font-size: 10.5px; opacity: .5; }',
+        '.dshoc-panel { position: absolute; right: 6px; top: 26px; z-index: 30; width: 214px; background: #202024; color: #e7e7ea; border: 1px solid rgba(127,127,127,.22); border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 9px; font-size: 12.5px; box-shadow: 0 10px 28px rgba(0,0,0,.5); }',
+        '.dshoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }',
+        '.dshoc-check input { margin: 0; width: 14px; height: 14px; cursor: pointer; accent-color: #4aa3ff; }',
+        '.dshoc-test { width: 100%; margin-top: 2px; border: 1px solid rgba(127,127,127,.24); background: rgba(127,127,127,.1); color: inherit; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; cursor: pointer; text-align: center; }',
+        '.dshoc-test:hover { background: rgba(127,127,127,.2); }',
+        '.dshoc-diag { font-size: 10.5px; opacity: .45; }',
 
       ].join('\n');
-      document.head.appendChild(style);
+      var style = document.getElementById(STYLE_ID);
+      if (!style) {
+        style = document.createElement('style');
+        style.id = STYLE_ID;
+        document.head.appendChild(style);
+      }
+      if (style.textContent !== css) style.textContent = css;
     }
 
     function SidebarOpencode(props) {
