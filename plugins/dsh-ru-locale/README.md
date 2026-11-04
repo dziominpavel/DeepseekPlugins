@@ -25,11 +25,11 @@
 ## Установка
 
 ```
-plugin_manager install_bundle target=C:\projects\dsh\plugins\dsh-ru-locale
+plugin_manager install_bundle target=C:\projects\!DeepseekPlugins\plugins\dsh-ru-locale
 ```
 
 Установка выполняется в текущий профиль (`desktop`) и действует во всех сессиях профиля.
-Если ссылка в профиле устарела после переезда каталога — `C:\projects\dsh\install.ps1 -Fix`.
+Если ссылка в профиле устарела после переезда каталога — `C:\projects\!DeepseekPlugins\install.ps1 -Fix`.
 
 ## Как включить
 
@@ -51,7 +51,7 @@ plugin_manager install_bundle target=C:\projects\dsh\plugins\dsh-ru-locale
 
 - Покрыты пространства имён, которые DSH регистрирует через службу локализации.
   Строки, зашитые в код в обход службы, остаются английскими.
-- Пакет живёт в общем каталоге плагинов DSH `C:\projects\dsh\plugins\dsh-ru-locale`,
+- Пакет живёт в общем каталоге плагинов DSH `C:\projects\!DeepseekPlugins\plugins\dsh-ru-locale`,
   вне проектов: на сборку CarMusicMeter он не влияет. Профиль держит на каталог
   ссылку (junction), поэтому после перемещения нужна переустановка
-  (`plugin_manager install_bundle`) или `C:\projects\dsh\install.ps1 -Fix`.
+  (`plugin_manager install_bundle`) или `C:\projects\!DeepseekPlugins\install.ps1 -Fix`.

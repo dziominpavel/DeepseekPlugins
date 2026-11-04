@@ -13,7 +13,7 @@
     После -Fix перезапусти DSH: загруженные модули заменяются только новым поколением.
 
 .PARAMETER Root
-    Каталог с плагинами. По умолчанию C:\projects\dsh.
+    Каталог с плагинами. По умолчанию C:\projects\!DeepseekPlugins.
 
 .PARAMETER Profile
     Профили DSH. По умолчанию desktop.
@@ -27,7 +27,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Root = 'C:/projects/dsh',
+    [string]$Root = 'C:/projects/!DeepseekPlugins',
     [string[]]$Profile = @('desktop'),
     [switch]$Fix
 )
