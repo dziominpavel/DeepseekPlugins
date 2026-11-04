@@ -1,0 +1,3 @@
+- insert:
+    - id: model-provider-label
+      name: '@local/dsh-model-provider-label'

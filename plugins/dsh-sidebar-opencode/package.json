@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-sidebar-opencode",
-  "version": "0.9.9",
+  "version": "0.9.10",
   "private": true,
   "description": "Список проектов и сессий в стиле opencode для сайдбара DeepSeek Harness",
   "type": "module",
