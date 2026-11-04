@@ -1,0 +1,3 @@
+- insert:
+    - id: sidebar-opencode
+      name: '@local/dsh-sidebar-opencode'
