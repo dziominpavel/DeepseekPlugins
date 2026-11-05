@@ -21,8 +21,8 @@ AGENTS.md           контекст проекта для агентов
 
 | Плагин | Версия | Что делает |
 |---|---|---|
-| [dsh-sidebar-opencode](plugins/dsh-sidebar-opencode/README.md) | 0.10.1 | Левая колонка в стиле opencode: проекты и сессии, ручной порядок перетаскиванием, статусы, звук готовности и сигнал «сессия ждёт ответа», архив с удалением навсегда |
-| [dsh-session-purge](plugins/dsh-session-purge/README.md) | 1.0.1 | Хост-команда `/delete-archived`: безвозвратно удаляет архивную сессию — журнал, кэш проекций и запись в реестре |
+| [dsh-sidebar-opencode](plugins/dsh-sidebar-opencode/README.md) | 0.10.2 | Левая колонка в стиле opencode: проекты и сессии, ручной порядок перетаскиванием, статусы, звук готовности и сигнал «сессия ждёт ответа», архив с удалением навсегда |
+| [dsh-session-purge](plugins/dsh-session-purge/README.md) | 1.1.0 | Хост-маршрут `POST api/session.purge` и команда `/delete-archived`: безвозвратно удаляют архивную сессию — журнал, кэш проекций и запись в реестре |
 | [dsh-model-provider-label](plugins/dsh-model-provider-label/README.md) | 1.0.1 | Провайдер рядом с названием модели в строке «Модель» меню композера |
 | [dsh-changes-fold](plugins/dsh-changes-fold/README.md) | 1.0.0 | Держит карточку «Отредактированные файлы» свёрнутой до заголовка, список раскрывается по клику |
 

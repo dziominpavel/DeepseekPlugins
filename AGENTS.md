@@ -29,14 +29,14 @@ install.ps1           проверка/починка link, bundles, junction, p
 README.md             каталог плагинов: обязательная строка на каждый плагин
 ```
 
-## Состояние на 05.11.2026
+## Состояние на 06.11.2026
 
 DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина установлены и активны:
 
 | Плагин | Версия | Строка | Половины |
 |---|---|---|---|
-| `@local/dsh-sidebar-opencode` | 0.10.1 | `sidebar-opencode` | клиент (слот `sidebar.workspaces`) |
-| `@local/dsh-session-purge` | 1.0.1 | `session-purge` | хост (команда `/delete-archived`) |
+| `@local/dsh-sidebar-opencode` | 0.10.2 | `sidebar-opencode` | клиент (слот `sidebar.workspaces`) |
+| `@local/dsh-session-purge` | 1.1.0 | `session-purge` | хост (маршрут `POST api/session.purge` + команда `/delete-archived`) |
 | `@local/dsh-model-provider-label` | 1.0.1 | `model-provider-label` | клиент (слот `conversation.input.model.label`) |
 | `@local/dsh-changes-fold` | 1.0.0 | `changes-fold` | клиент (DOM-обвязка карточки `[data-changed-files]`) |
 
@@ -77,7 +77,10 @@ DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина уста
   (`{ name, description, input: { hint }, handler({ rawInput, agent }) }` →
   `{ kind: 'success' | 'error', text }`), `workspaceRegistry`
   (`archivedSessionIds`, `list()`, `unarchiveSession`, `workspace.detachSession`),
-  `sessionPersistence.root`, `sessions.get(id)`.
+  `sessionPersistence.root`, `sessions.get(id)`, а также
+  `connection.fetch.register({ path: '/api/…', methods, requestBody, fetch })` —
+  аутентифицированный маршрут на `/api`-мосте, браузер зовёт его
+  документно-относительным `fetch('api/…')` и получает cookie автоматически.
 - Клиентские контракты: `sessions.list`, `workspaces.list`,
   `uiSession.sessionStatus` (Map `sessionId → { running, pendingInteraction,
   completionUnread }`), `uiWorkspace.openSession/startSession/archiveSession/

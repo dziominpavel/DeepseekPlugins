@@ -1,0 +1,22 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@local/dsh-changes-fold':
+        specifier: link:C:/projects/DeepseekPlugins/plugins/dsh-changes-fold
+        version: link:../../../../../projects/DeepseekPlugins/plugins/dsh-changes-fold
+      '@local/dsh-model-provider-label':
+        specifier: link:C:/projects/DeepseekPlugins/plugins/dsh-model-provider-label
+        version: link:../../../../../projects/DeepseekPlugins/plugins/dsh-model-provider-label
+      '@local/dsh-session-purge':
+        specifier: link:C:/projects/DeepseekPlugins/plugins/dsh-session-purge
+        version: link:../../../../../projects/DeepseekPlugins/plugins/dsh-session-purge
+      '@local/dsh-sidebar-opencode':
+        specifier: link:C:/projects/DeepseekPlugins/plugins/dsh-sidebar-opencode
+        version: link:../../../../../projects/DeepseekPlugins/plugins/dsh-sidebar-opencode

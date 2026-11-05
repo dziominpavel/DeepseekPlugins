@@ -527,7 +527,11 @@ window.__ModuleLoader__.load({
         bump(version + 1);
       }
 
-      /** Безвозвратное удаление архивной сессии через хост-команду /delete-archived. */
+      /**
+       * Безвозвратное удаление архивной сессии через хост-маршрут
+       * `POST api/session.purge`. Открытая сессия не нужна: запрос
+       * аутентифицируется cookie страницы, которую выставил /api-мост.
+       */
       function purgeSession(targetId) {
         var run = props.deleteArchivedSession;
         if (!run) return;
@@ -539,38 +543,17 @@ window.__ModuleLoader__.load({
         );
         if (!confirmed) return;
 
-        var receiver = null;
-        Object.keys(byId).some(function (candidate) {
-          var session = byId[candidate];
-          if (session && session.retainedBy && session.retainedBy.mainView > 0) {
-            receiver = candidate;
-            return true;
-          }
-          return false;
-        });
-        if (!receiver) {
-          window.alert('Откройте любую сессию: команда удаления выполняется в её контексте.');
-          return;
-        }
-
-        Promise.resolve(run(receiver, targetId)).then(function (result) {
+        Promise.resolve(run(targetId)).then(function (result) {
           if (!result || result.ok !== true) {
-            var message = result && result.error && result.error.message ? result.error.message : 'неизвестная ошибка';
-            window.alert('Не удалось удалить: ' + message);
-            return;
-          }
-          if (result.value === undefined) {
-            window.alert('Хост не знает команду /delete-archived. Установите @local/dsh-session-purge и перезапустите DSH.');
-            return;
-          }
-          var outcome = result.value.result || {};
-          if (outcome.kind !== 'success') {
-            window.alert(outcome.text || 'Удаление отклонено хостом.');
+            window.alert('Не удалось удалить: ' + ((result && result.message) || 'неизвестная ошибка'));
             return;
           }
           deletedBox.current[targetId] = true;
           writeJson(DELETED_KEY, deletedBox.current);
           bump(version + 1);
+          if (result.warnings && result.warnings.length > 0) {
+            window.alert('Файлы сессии удалены, но: ' + result.warnings.join('; ') + '. Перезапустите DSH и повторите, если строка вернётся.');
+          }
         }).catch(function (error) {
           window.alert('Не удалось удалить: ' + (error && error.message ? error.message : error));
         });
@@ -919,7 +902,7 @@ window.__ModuleLoader__.load({
       return h('div', { className: 'dshoc-root', ref: rootRef }, children);
     }
 
-    var inject = ['slots', 'locale', 'sessions', 'workspaces', 'uiSession', 'remote', 'remote.commands'];
+    var inject = ['slots', 'locale', 'sessions', 'workspaces', 'uiSession'];
 
     function apply(ctx) {
       var sessions = ctx.get('sessions');
@@ -970,8 +953,29 @@ window.__ModuleLoader__.load({
                   console.warn('session unarchive rejected:', reason);
                 });
               },
-              deleteArchivedSession: function (receiverId, targetId) {
-                return ctx.remote.commands.execute(receiverId, '/delete-archived ' + targetId, []);
+              deleteArchivedSession: function (targetId) {
+                if (typeof window.fetch !== 'function') {
+                  return Promise.resolve({ ok: false, message: 'Браузер не поддерживает fetch.' });
+                }
+                // Документно-относительный путь: страница может стоять под монтированием.
+                return window.fetch('api/session.purge', {
+                  method: 'POST',
+                  headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ sessionId: targetId })
+                }).then(function (response) {
+                  return response.json().catch(function () { return null; }).then(function (body) {
+                    if (response.ok && body && body.ok === true) return body;
+                    if (response.status === 401 || response.status === 403) {
+                      return { ok: false, message: 'Страница не авторизована. Обновите DSH (F5) и повторите.' };
+                    }
+                    if (response.status === 404 || response.status === 405) {
+                      return { ok: false, message: 'Хост не знает маршрут удаления. Перезапустите DSH, чтобы обновилась хост-половина @local/dsh-session-purge.' };
+                    }
+                    return { ok: false, message: (body && body.message) || ('HTTP ' + response.status) };
+                  });
+                }, function (error) {
+                  return { ok: false, message: error && error.message ? error.message : String(error) };
+                });
               }
             };
           }

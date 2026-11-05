@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "Purge archived sessions",
-    "description": "Adds the /delete-archived command that permanently removes an archived session's log, cache, and registry entry."
+    "description": "The POST api/session.purge route and the /delete-archived command permanently remove an archived session's log, cache, and registry entry."
   }
 }

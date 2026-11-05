@@ -13,10 +13,15 @@ const file = path.join(root, 'plugins/dsh-sidebar-opencode/client.js');
 const code = fs.readFileSync(file, 'utf8');
 
 let definition;
+const alerts = [];
 const window = {
   __ModuleLoader__: { load(entry) { definition = entry; } },
-  localStorage: { getItem: () => null, setItem: () => {} },
-  confirm: () => false,
+  localStorage: {
+    getItem: (key) => (key === 'dsh.opencode.showArchived.v1' ? 'true' : null),
+    setItem: () => {}
+  },
+  confirm: () => true,
+  alert: (message) => alerts.push(message),
   setInterval: () => 0,
   clearInterval: () => {},
   AudioContext: undefined
@@ -100,24 +105,27 @@ exported.apply(ctx);
 if (!captured) throw new Error('компонент не зарегистрирован в слоте');
 
 const sessionsState = {
-  ids: ['s1', 's2', 's3'],
+  ids: ['s1', 's2', 's3', 's4'],
   phase: 'ready',
   byId: {
     s1: { id: 's1', title: 'Ждёт вопрос', updatedAt: Date.now() - 60000, running: true, retainedBy: { mainView: 0 } },
     s2: { id: 's2', title: 'Работает', updatedAt: Date.now() - 120000, running: true, retainedBy: { mainView: 1 } },
-    s3: { id: 's3', title: 'Праздная', updatedAt: Date.now() - 3600000, running: false, retainedBy: { mainView: 0 } }
+    s3: { id: 's3', title: 'Праздная', updatedAt: Date.now() - 3600000, running: false, retainedBy: { mainView: 0 } },
+    s4: { id: 's4', title: 'Архивная', updatedAt: Date.now() - 7200000, running: false }
   }
 };
 const workspacesState = {
-  items: [{ workspaceId: 'w1', title: 'Проект', path: 'C:/w1', sessionIds: ['s1', 's2', 's3'] }],
-  archivedSessionIds: []
+  items: [{ workspaceId: 'w1', title: 'Проект', path: 'C:/w1', sessionIds: ['s1', 's2', 's3', 's4'] }],
+  archivedSessionIds: ['s4']
 };
 const statuses = new Map([
   ['s1', { running: true, pendingInteraction: { kind: 'question' }, completionUnread: false }],
   ['s2', { running: true, pendingInteraction: undefined, completionUnread: false }],
-  ['s3', { running: false, pendingInteraction: undefined, completionUnread: false }]
+  ['s3', { running: false, pendingInteraction: undefined, completionUnread: false }],
+  ['s4', { running: false, pendingInteraction: undefined, completionUnread: false }]
 ]);
 
+const purgeCalls = [];
 const props = {
   useSessions: () => sessionsState,
   useWorkspaces: () => workspacesState,
@@ -128,7 +136,10 @@ const props = {
   unarchiveSession() {},
   pickDirectory: () => Promise.resolve(null),
   createWorkspace: () => Promise.resolve({}),
-  deleteArchivedSession: () => Promise.resolve({ ok: true })
+  deleteArchivedSession: (targetId) => {
+    purgeCalls.push(targetId);
+    return Promise.resolve({ ok: true });
+  }
 };
 
 const tree = captured.component(props);
@@ -155,4 +166,14 @@ if (!waitingRow) throw new Error('строка ожидания не найде�
 if (String(waitingRow.props.className).includes('dshoc-spin')) throw new Error('ожидание не должно рисоваться спиннером');
 if (!String(waitingRow.props.title || '').includes('Ждёт')) throw new Error('title строки должен объяснять ожидание');
 
-console.log('smoke ok: строки, маркеры и подпись ожидания на месте');
+// У архивной строки есть корзина, и она вызывает удаление без открытой сессии.
+const trash = flat.find((node) => node.props && String(node.props.className || '').includes('dshoc-danger'));
+if (!trash) throw new Error('у архивной строки нет корзины удаления');
+trash.props.onClick({ stopPropagation() {} });
+await Promise.resolve();
+if (purgeCalls.length !== 1 || purgeCalls[0] !== 's4') {
+  throw new Error('корзина должна удалять архивную сессию s4: ' + JSON.stringify(purgeCalls));
+}
+if (alerts.length !== 0) throw new Error('удаление не должно просить открыть сессию: ' + alerts.join('; '));
+
+console.log('smoke ok: строки, маркеры, подпись ожидания и удаление из архива на месте');

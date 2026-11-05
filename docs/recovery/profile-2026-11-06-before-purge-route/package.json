@@ -1,0 +1,22 @@
+{
+  "name": "dsh-profile-desktop",
+  "private": true,
+  "dependencies": {
+    "@local/dsh-changes-fold": "link:C:/projects/DeepseekPlugins/plugins/dsh-changes-fold",
+    "@local/dsh-model-provider-label": "link:C:/projects/DeepseekPlugins/plugins/dsh-model-provider-label",
+    "@local/dsh-session-purge": "link:C:/projects/DeepseekPlugins/plugins/dsh-session-purge",
+    "@local/dsh-sidebar-opencode": "link:C:/projects/DeepseekPlugins/plugins/dsh-sidebar-opencode"
+  },
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app",
+        "@local/dsh-session-purge",
+        "@local/dsh-model-provider-label",
+        "@local/dsh-changes-fold",
+        "@local/dsh-sidebar-opencode"
+      ]
+    }
+  }
+}

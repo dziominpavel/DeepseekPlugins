@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-session-purge",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "description": "Безвозвратное удаление архивных сессий DeepSeek Harness",
   "type": "module",
