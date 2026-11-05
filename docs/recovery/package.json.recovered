@@ -1,0 +1,20 @@
+{
+  "name": "dsh-profile-desktop",
+  "private": true,
+  "dsh": {
+    "profile": {
+      "bundles": [
+        "@deepseek-ai/dsh-base",
+        "@deepseek-ai/dsh-web-app"
+      ]
+    }
+  },
+  "dependencies": {
+    "@local/dsh-model-provider-label": "link:C:/projects/DeepseekPlugins/plugins/dsh-model-provider-label",
+    "@local/dsh-ru-locale": "link:C:/projects/DeepseekPlugins/plugins/dsh-ru-locale",
+    "@local/dsh-session-purge": "link:C:/projects/DeepseekPlugins/plugins/dsh-session-purge",
+    "@local/dsh-sidebar-opencode": "link:C:/projects/DeepseekPlugins/plugins/dsh-sidebar-opencode"
+  }
+}
+
+(End of file - total 18 lines)

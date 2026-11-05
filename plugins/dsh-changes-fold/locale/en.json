@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Collapse changed files",
+    "description": "Keeps the changed-files card under an answer collapsed to its header and expands the file list on click."
+  }
+}

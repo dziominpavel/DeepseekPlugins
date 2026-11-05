@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Purge archived sessions",
+    "description": "Adds the /delete-archived command that permanently removes an archived session's log, cache, and registry entry."
+  }
+}

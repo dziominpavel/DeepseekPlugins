@@ -1,0 +1,3 @@
+- insert:
+    - id: changes-fold
+      name: '@local/dsh-changes-fold'

@@ -1,41 +1,55 @@
-# dsh — плагины DeepSeek Harness
+# Плагины DeepSeek Harness
 
-Единственное место, где живут исходники плагинов DSH. Не привязано ни к одному
-проекту: CarMusicMeter и любой другой проект видят их только через профиль.
+Исходники кастомных плагинов DSH. Один каталог в `plugins/` = один пакет.
+Плагины не привязаны к рабочим проектам: DSH видит их только через профиль,
+который держит ссылку `link:C:/projects/DeepseekPlugins/plugins/<name>`.
 
 ```text
-C:\projects\DeepseekPlugins\
-  plugins\            исходники плагинов, один каталог = один пакет
-  template\plugin\    скелет нового UI-плагина
-  docs\PLUGIN-RULES.md  правила: как писать, собирать, ставить, обновлять
-  install.ps1         проверка и восстановление связи профиля с плагинами
+plugins/            исходники плагинов, один каталог = один пакет
+archive/            снятые плагины, не устанавливаются
+template/plugin/    скелет нового плагина
+docs/               правила, гайд по плагинам, разбор «Встроенных плагинов»
+install.ps1         проверка и починка связи профиля с исходниками
+AGENTS.md           контекст проекта для агентов
 ```
 
-## Сейчас здесь
+## Каталог плагинов
 
-| Плагин | Что делает |
-|---|---|
-| `dsh-ru-locale` | Русский язык веб-интерфейса DSH: 58 пространств имён, 2668 строк |
-| `dsh-sidebar-opencode` | Список проектов и сессий в стиле opencode: ручной порядок, статусы, звук готовности |
-| `dsh-model-provider-label` | Провайдер рядом с моделью в меню выбора модели |
+Обязательный индекс: **добавил плагин — добавил строку сюда** (и в
+[docs/PLUGINS-GUIDE.md](docs/PLUGINS-GUIDE.md)). Описание — одной фразой, чтобы
+по таблице было сразу понятно, что установлено и что оно делает.
 
-## Как это связано с профилем
+| Плагин | Версия | Что делает |
+|---|---|---|
+| [dsh-sidebar-opencode](plugins/dsh-sidebar-opencode/README.md) | 0.10.1 | Левая колонка в стиле opencode: проекты и сессии, ручной порядок перетаскиванием, статусы, звук готовности и сигнал «сессия ждёт ответа», архив с удалением навсегда |
+| [dsh-session-purge](plugins/dsh-session-purge/README.md) | 1.0.1 | Хост-команда `/delete-archived`: безвозвратно удаляет архивную сессию — журнал, кэш проекций и запись в реестре |
+| [dsh-model-provider-label](plugins/dsh-model-provider-label/README.md) | 1.0.1 | Провайдер рядом с названием модели в строке «Модель» меню композера |
+| [dsh-changes-fold](plugins/dsh-changes-fold/README.md) | 1.0.0 | Держит карточку «Отредактированные файлы» свёрнутой до заголовка, список раскрывается по клику |
 
-DSH ставит плагин в профиль ссылкой: `package.json` профиля хранит
-`"@local/<name>": "link:C:/projects/DeepseekPlugins/plugins/<name>"`, а
-`node_modules/@local/<name>` — junction на тот же каталог. Каталог можно
-переносить только вместе с переустановкой, иначе junction станет битым.
+Все четыре подключены к профилю `desktop` и работают одновременно: занимают разные
+слоты и не конфликтуют. Русский язык — не плагин: он встроен в DSH 0.2.2
+(**Настройки → Общие → Язык**), а `dsh-ru-locale` снят в `archive/`.
+
+## Поставить и проверить
 
 ```text
-C:\Users\Dziom\.dsh\profiles\<profile>\package.json
-C:\Users\Dziom\.dsh\profiles\<profile>\node_modules\@local\<name>  ->  C:\projects\DeepseekPlugins\plugins\<name>
+plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-<name>
+```
+
+После правки `client.js` или смены версии — переустановка и обновление страницы
+DSH: клиентские модули подхватываются новым поколением.
+
+```powershell
+C:/projects/DeepseekPlugins/install.ps1        # отчёт: link, bundle, junction, lock
+C:/projects/DeepseekPlugins/install.ps1 -Fix   # починить после переезда каталога
 ```
 
 ## Новый плагин
 
-1. `template/plugin` -> `plugins/dsh-<name>`, переименовать пакет в `@local/dsh-<name>`.
-2. Собрать и проверить: `node --check client.js`, для переводов — `node tools/build.mjs`.
-3. Поставить в профиль: `plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-<name>`.
-4. После правок, переезда или смены диска — `install.ps1 -Fix`, затем перезапуск DSH.
+1. `template/plugin` → `plugins/dsh-<name>`, имя пакета `@local/dsh-<name>`.
+2. Проверить: `node --check client.js` (для переводов — `node tools/build.mjs`).
+3. Поставить в профиль через `plugin_manager install_bundle`.
+4. **Дописать строку в таблицу выше** и в [docs/PLUGINS-GUIDE.md](docs/PLUGINS-GUIDE.md);
+   снятый плагин — в `archive/` и с пометкой в [archive/README.md](archive/README.md).
 
 Полные правила — [docs/PLUGIN-RULES.md](docs/PLUGIN-RULES.md).
