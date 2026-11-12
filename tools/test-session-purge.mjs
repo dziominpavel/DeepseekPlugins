@@ -171,7 +171,47 @@ try {
   assert.equal(repeated.status, 200);
   assert.equal((await repeated.json()).alreadyGone, true);
 
-  console.log('purge ok: проверка, удаление, идемпотентность, отказы, HTTP-маршрут');
+  // Пакетное удаление: один запрос, per-session results, частичный отказ.
+  const batchA = 'session-aaaaaaaa-1111-4111-8111-111111111111';
+  const batchB = 'session-bbbbbbbb-2222-4222-8222-222222222222';
+  const batchDenied = 'session-cccccccc-3333-4333-8333-333333333333';
+  const batchADir = join(projectDir, batchA);
+  const batchBDir = join(projectDir, batchB);
+  const batchDeniedDir = join(projectDir, batchDenied);
+  for (const dir of [batchADir, batchBDir, batchDeniedDir]) {
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, 'session.v4.jsonl.zstd'), 'log');
+    await writeFile(join(cacheDir, dir.slice(dir.lastIndexOf('session-')) + '.json'), '{}');
+  }
+  registry.archivedSessionIds = [batchA, batchB];
+
+  const postBatch = (sessionIds) => registered.fetch(new Request('http://127.0.0.1/api/session.purge', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ sessionIds }),
+  }));
+  const batchResponse = await postBatch([batchA, batchB, batchDenied, batchA]);
+  assert.equal(batchResponse.status, 200);
+  const batchBody = await batchResponse.json();
+  assert.equal(batchBody.batch, true);
+  assert.equal(batchBody.total, 3);
+  assert.equal(batchBody.deleted, 2);
+  assert.equal(batchBody.failed, 1);
+  assert.equal(batchBody.ok, false);
+  const batchResults = new Map(batchBody.results.map((result) => [result.sessionId, result]));
+  assert.equal(batchResults.get(batchA).ok, true);
+  assert.equal(batchResults.get(batchB).ok, true);
+  assert.equal(batchResults.get(batchDenied).ok, false);
+  assert.equal(batchResults.get(batchDenied).code, 'not-archived');
+  await assert.rejects(readFile(join(batchADir, 'session.v4.jsonl.zstd')), /ENOENT/);
+  await assert.rejects(readFile(join(batchBDir, 'session.v4.jsonl.zstd')), /ENOENT/);
+  assert.equal(await readFile(join(batchDeniedDir, 'session.v4.jsonl.zstd'), 'utf8'), 'log');
+  assert.deepEqual(registry.archivedSessionIds, []);
+
+  const emptyBatch = await postBatch([]);
+  assert.equal(emptyBatch.status, 400);
+
+  console.log('purge ok: проверка, удаление, идемпотентность, отказы, HTTP-маршрут, batch');
 } finally {
   process.env.DSH_HOME = previousHome;
   await rm(home, { recursive: true, force: true });

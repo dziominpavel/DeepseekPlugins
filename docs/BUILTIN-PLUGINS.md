@@ -144,7 +144,8 @@ read-only), но по ней видно, за что отвечает кажда
 - **плагины и телеметрия** — `plugin-manager`, `plugin-market`, `plugin-inventory`, `otel`.
 
 Твои собственные плагины (`dsh-sidebar-opencode`, `dsh-session-purge`,
-`dsh-model-provider-label`) тоже здесь: они вставлены профилем, а не пресетом.
+`dsh-model-provider-label`, `dsh-changes-fold`, `dsh-skillpack`) тоже здесь: они
+вставлены профилем, а не пресетом.
 `dsh-ru-locale` больше не ставится: русский язык встроен в базовую поставку.
 
 ## Как реально менять состав

@@ -1,0 +1,25 @@
+{
+    "schema": 1,
+    "profile": "desktop",
+    "dshVersion": "0.2.2-rc.1",
+    "plugins": [
+                    "@local/dsh-changes-fold",
+                    "@local/dsh-model-provider-label",
+                    "@local/dsh-session-purge",
+                    "@local/dsh-sidebar-opencode",
+                    "@local/dsh-skillpack"
+                ],
+    "bundles": [
+                    "@deepseek-ai/dsh-base",
+                    "@deepseek-ai/dsh-web-app",
+                    "@local/dsh-model-provider-label",
+                    "@local/dsh-changes-fold",
+                    "@local/dsh-session-purge",
+                    "@local/dsh-sidebar-opencode",
+                    "@local/dsh-skillpack",
+                    "dshmarket"
+                ],
+    "remoteDependencies": {
+                               "dshmarket": "1.73.19"
+                           }
+}

@@ -1,0 +1,13 @@
+# Default index sources for the official experimental plugin market bundle.
+# This bundle must be selected after
+# @deepseek-ai/dsh-experimental-plugin-market-bundle, so the `plugin-market`
+# row already exists when this patch applies.
+#
+# The profile's own cordis.patch.yml is a later layer: when the sources are
+# edited in Discover, that saved config replaces this one wholesale.
+- id: plugin-market
+  name: "@deepseek-ai/dsh-plugin-market"
+  config:
+    indexes:
+      - "https://cdn.jsdelivr.net/npm/dsh-plugin-catalog/index.json"
+      - "https://dshopen.org/index.json"

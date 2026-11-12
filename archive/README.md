@@ -22,3 +22,16 @@
 
 Вернуть, если понадобится: перенести каталог обратно в `plugins/`, убрать
 `addLanguage`/`register` для уже существующих языков и переустановить.
+
+## dsh-market-defaults
+
+Конфигурационный bundle для встроенного экспериментального маркета: патчем
+`plugin-market` добавлял два публичных индекса — каталог awesome-dsh-plugin
+через jsDelivr и открытый индекс dshopen.org. Снят 13.11.2026, потому что для
+полноценного маркета используется сторонний `dshmarket`: он не читает индексы
+встроенного Discover, поэтому бандл стал лишним.
+
+Вернуть: перенести каталог обратно в `plugins/` и поставить
+`plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-market-defaults`.
+В `dsh.profile.bundles` он должен стоять после
+`@deepseek-ai/dsh-experimental-plugin-market-bundle`.

@@ -22,23 +22,25 @@
 
 ```text
 plugins/dsh-<name>/   исходники, один каталог = один пакет (@local/dsh-<name>)
+profile/<profile>/    переносимый снимок профиля: bundles + cordis.patch.yml
 archive/              снятые плагины; install.ps1 и plugin_manager их не видят
 template/plugin/      скелет нового плагина
-docs/                 PLUGIN-RULES.md, PLUGINS-GUIDE.md, BUILTIN-PLUGINS.md, recovery/
-install.ps1           проверка/починка link, bundles, junction, pnpm-lock
+docs/                 PLUGIN-RULES.md, PLUGINS-GUIDE.md, BUILTIN-PLUGINS.md, TRANSFER.md, UI-SETTINGS-AUDIT.md, recovery/
+install.ps1           проверка/починка link, bundles, junction, pnpm-lock; -Capture/-Restore
 README.md             каталог плагинов: обязательная строка на каждый плагин
 ```
 
-## Состояние на 06.11.2026
+## Состояние на 12.11.2026
 
-DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина установлены и активны:
+DSH `0.2.2-rc.1`, профиль `desktop`, пять плагинов установлены и активны:
 
 | Плагин | Версия | Строка | Половины |
 |---|---|---|---|
-| `@local/dsh-sidebar-opencode` | 0.10.2 | `sidebar-opencode` | клиент (слот `sidebar.workspaces`) |
-| `@local/dsh-session-purge` | 1.1.0 | `session-purge` | хост (маршрут `POST api/session.purge` + команда `/delete-archived`) |
+| `@local/dsh-sidebar-opencode` | 0.13.1 | `sidebar-opencode` | клиент (слот `sidebar.workspaces`) |
+| `@local/dsh-session-purge` | 1.2.1 | `session-purge` | хост (маршрут `POST api/session.purge`, одиночный и пакетный, + команда `/delete-archived`) |
 | `@local/dsh-model-provider-label` | 1.0.1 | `model-provider-label` | клиент (слот `conversation.input.model.label`) |
 | `@local/dsh-changes-fold` | 1.0.0 | `changes-fold` | клиент (DOM-обвязка карточки `[data-changed-files]`) |
+| `@local/dsh-skillpack` | 1.2.0 | `skillpack` | хост (навыки OpenSpec и `simplify-code` из `skills/`, команды-промпты из `commands/`, `/kit`; перечитывает каталог на ходу) |
 
 `archive/dsh-ru-locale` не ставить: в 0.2.2 русский встроен (8 языков), а
 `ctx.locale.addLanguage({ id: 'ru' })` бросает `locale "ru" is already registered`.
@@ -61,6 +63,9 @@ DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина уста
 - Не переносить/переименовывать каталог плагина без `install.ps1 -Fix` — junction
   в профиле станет битым.
 - Перед правкой профиля — бэкап в `docs/recovery/` (там уже лежат снимки).
+- Перенос на другую машину/версию DSH — не копии встроенных плагинов, а
+  `install.ps1 -Capture` / `-Restore`. После изменения состава или настроек
+  обновить снимок, иначе `-Restore` вернёт старое.
 
 ## Подводные камни DSH 0.2.2
 
@@ -81,6 +86,13 @@ DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина уста
   `connection.fetch.register({ path: '/api/…', methods, requestBody, fetch })` —
   аутентифицированный маршрут на `/api`-мосте, браузер зовёт его
   документно-относительным `fetch('api/…')` и получает cookie автоматически.
+- Навыки: `ctx.skills.register({ name, description, content, whenToUse?,
+  invocation: { modelInvocable, userInvocable }, path?, resourceBase? })` —
+  рантайм-навык с рангом 250; навык проекта (`.dsh/skills`, `.agents/skills`;
+  100/200) перекрывает его, пользовательский `~/.dsh/skills` (400) — нет.
+  `user-invocable: false` прячет навык из меню «/», `disable-model-invocation:
+  true` запрещает модели грузить его самой. Вызов `/имя` в сообщении
+  пользователя вставляет `<skill_content>` на шаге агента (`dsh-tool-skill`).
 - Клиентские контракты: `sessions.list`, `workspaces.list`,
   `uiSession.sessionStatus` (Map `sessionId → { running, pendingInteraction,
   completionUnread }`), `uiWorkspace.openSession/startSession/archiveSession/
@@ -96,8 +108,10 @@ DSH `0.2.2-rc.1`, профиль `desktop`, четыре плагина уста
 ## Проверка
 
 ```powershell
-C:/projects/DeepseekPlugins/install.ps1        # отчёт: link, bundles, junction, lock
-C:/projects/DeepseekPlugins/install.ps1 -Fix   # привести в порядок
+C:/projects/DeepseekPlugins/install.ps1           # отчёт: link, bundles, junction, lock
+C:/projects/DeepseekPlugins/install.ps1 -Fix      # привести в порядок
+C:/projects/DeepseekPlugins/install.ps1 -Capture  # обновить снимок профиля
+C:/projects/DeepseekPlugins/install.ps1 -Restore  # применить снимок
 node --check plugins/<name>/client.js
 ```
 
@@ -110,4 +124,6 @@ node --check plugins/<name>/client.js
 - [docs/PLUGIN-RULES.md](docs/PLUGIN-RULES.md) — как писать, собирать, ставить, обновлять.
 - [docs/PLUGINS-GUIDE.md](docs/PLUGINS-GUIDE.md) — что делает каждый плагин и что где стоит.
 - [docs/BUILTIN-PLUGINS.md](docs/BUILTIN-PLUGINS.md) — как читать экран «Встроенные плагины».
+- [docs/TRANSFER.md](docs/TRANSFER.md) — перенос плагинов и настроек профиля.
+- [docs/UI-SETTINGS-AUDIT.md](docs/UI-SETTINGS-AUDIT.md) — почему настройки сайдбара выглядят так.
 - [docs/recovery/](docs/recovery/) — бэкапы профиля перед правками.

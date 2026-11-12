@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Market index defaults",
+    "description": "Adds curated plugin index sources to Discover so the market lists plugins without searching for URLs."
+  }
+}

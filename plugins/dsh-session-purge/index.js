@@ -18,6 +18,7 @@ import { homedir } from 'node:os';
 const SESSION_ID = /^session-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const COMMAND = 'delete-archived';
 const ROUTE = '/api/session.purge';
+const MAX_BATCH = 500;
 
 export const inject = ['commands'];
 
@@ -181,7 +182,7 @@ export async function purgeArchivedSession(ctx, id, options = {}) {
   const uuid = id.slice('session-'.length);
   const sessions = ctx.get('sessions');
   if (sessions !== undefined && (sessions.get(id) !== undefined || sessions.get(uuid) !== undefined)) {
-    return failure('live', 'Сессия ещё загружена в память — перезапустите DSH и повторите.');
+    return failure('live', 'Сессия ещё загружена в память DSH (даже если открыта другая) — перезапустите DSH и повторите.');
   }
   if (options.agent !== undefined && options.agent.session?.id === id) {
     return failure('live', 'Нельзя удалить сессию, в которой выполняется команда.');
@@ -294,11 +295,46 @@ function registerRoute(ctx) {
             try {
               payload = await request.json();
             } catch (error) {
-              return jsonResponse(400, failure('bad-id', 'Ожидался JSON вида { "sessionId": "session-<uuid>" }.'));
+              return jsonResponse(400, failure('bad-id', 'Ожидался JSON вида { "sessionId": "session-<uuid>" } или { "sessionIds": [...] }.'));
             }
-            const sessionId = payload !== null && typeof payload === 'object' && typeof payload.sessionId === 'string'
-              ? payload.sessionId.trim()
-              : '';
+            const body = payload !== null && typeof payload === 'object' ? payload : {};
+            if (Array.isArray(body.sessionIds)) {
+              const ids = [];
+              for (const value of body.sessionIds) {
+                if (typeof value !== 'string') continue;
+                const id = value.trim();
+                if (id.length > 0 && !ids.includes(id)) ids.push(id);
+              }
+              if (ids.length === 0) {
+                return jsonResponse(400, failure('bad-id', 'Нужен непустой массив sessionIds.'));
+              }
+              if (ids.length > MAX_BATCH) {
+                return jsonResponse(400, failure('bad-request', `Не больше ${MAX_BATCH} сессий за один запрос.`));
+              }
+              const results = [];
+              for (const id of ids) {
+                if (request.signal?.aborted) break;
+                try {
+                  const result = await purgeArchivedSession(scoped, id, { signal: request.signal });
+                  results.push(result.sessionId === id ? result : { ...result, sessionId: id });
+                } catch (error) {
+                  results.push({ ...failure('io', `Удаление ${id} не выполнено: ${errorText(error)}`), sessionId: id });
+                }
+              }
+              const deleted = results.filter((result) => result.ok === true).length;
+              const skipped = results.filter((result) => result.ok !== true && result.code === 'live').length;
+              const failed = results.length - deleted - skipped;
+              return jsonResponse(200, {
+                ok: failed === 0 && results.length === ids.length,
+                batch: true,
+                total: results.length,
+                deleted,
+                failed,
+                skipped,
+                results,
+              });
+            }
+            const sessionId = typeof body.sessionId === 'string' ? body.sessionId.trim() : '';
             try {
               const result = await purgeArchivedSession(scoped, sessionId, { signal: request.signal });
               return jsonResponse(statusFor(result), result);

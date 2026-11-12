@@ -87,6 +87,14 @@ window.__ModuleLoader__.load({
       return new Date(value).toLocaleDateString('ru-RU');
     }
 
+    function sessionWord(count) {
+      var mod10 = count % 10;
+      var mod100 = count % 100;
+      if (mod10 === 1 && mod100 !== 11) return 'архивная сессия';
+      if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'архивные сессии';
+      return 'архивных сессий';
+    }
+
     var audioContext = null;
 
     function ensureAudioContext() {
@@ -221,6 +229,14 @@ window.__ModuleLoader__.load({
       ]);
     }
 
+    function iconSpeaker() {
+      return svg([
+        h('path', { key: 'box', d: 'M11 5 6.5 8.5H4a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2.5L11 19V5z' }),
+        h('path', { key: 'wave1', d: 'M15 9.5a3.5 3.5 0 0 1 0 5' }),
+        h('path', { key: 'wave2', d: 'M17.8 7a7.5 7.5 0 0 1 0 10' })
+      ]);
+    }
+
     function iconArchive() {
       return svg([
         h('rect', { key: 'lid', x: 3, y: 4, width: 18, height: 5, rx: 1.5 }),
@@ -246,13 +262,6 @@ window.__ModuleLoader__.load({
         h('path', { key: 'handle', d: 'M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7' }),
         h('path', { key: 'line1', d: 'M10 11v5' }),
         h('path', { key: 'line2', d: 'M14 11v5' })
-      ]);
-    }
-
-    function iconFolderPlus() {      return svg([
-        h('path', { key: 'folder', d: 'M4 20h16a1.5 1.5 0 0 0 1.5-1.5V9A1.5 1.5 0 0 0 20 7.5h-7.3a1.5 1.5 0 0 1-1.2-.6l-.9-1.2a1.5 1.5 0 0 0-1.2-.6H4.5A1.5 1.5 0 0 0 3 6.6v11.9A1.5 1.5 0 0 0 4.5 20z' }),
-        h('path', { key: 'v', d: 'M12 11v5' }),
-        h('path', { key: 'h', d: 'M9.5 13.5h5' })
       ]);
     }
 
@@ -315,15 +324,40 @@ window.__ModuleLoader__.load({
         '.dshoc-row.dshoc-waiting .dshoc-time { opacity: .75; }',
         '.dshoc-waitcount { flex: 0 0 auto; font: 700 10px/15px system-ui, -apple-system, "Segoe UI", sans-serif; color: #fff; background: #46a758; border-radius: 8px; padding: 0 5px; animation: dshoc-pulse 1.5s ease-out infinite; }',
         '.dshoc-empty { padding: 8px 10px; font-size: 12px; opacity: .55; }',
+        '.dshoc-emptyhint { margin-top: 4px; font-size: 11px; }',
         '.dshoc-moved { font-size: 11px; opacity: .5; flex: 0 0 auto; }',
         '.dshoc-ws.dshoc-drop { background: rgba(74,163,255,.2); outline: 1px dashed rgba(74,163,255,.7); outline-offset: -1px; }',
         '.dshoc-sessions.dshoc-drop-area { background: rgba(74,163,255,.08); border-radius: 6px; }',
-        '.dshoc-panel { box-sizing: border-box; align-self: stretch; margin: 2px 0 6px; background: #202024; color: #e7e7ea; border: 1px solid rgba(127,127,127,.22); border-radius: 8px; padding: 9px; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; }',
-        '.dshoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }',
-        '.dshoc-check input { margin: 0; width: 14px; height: 14px; cursor: pointer; accent-color: #4aa3ff; }',
-        '.dshoc-test { display: block; box-sizing: border-box; align-self: stretch; margin-top: 2px; border: 1px solid rgba(127,127,127,.24); background: rgba(127,127,127,.1); color: inherit; border-radius: 6px; padding: 5px 8px; font-size: 11.5px; cursor: pointer; text-align: center; }',
-        '.dshoc-test:hover { background: rgba(127,127,127,.2); }',
-        '.dshoc-diag { font-size: 10.5px; opacity: .45; }',
+        '.dshoc-panel { box-sizing: border-box; align-self: stretch; margin: 2px 0 6px; background: var(--dsw-alias-bg-layer-2, #202024); color: var(--dsw-alias-label-primary, #e7e7ea); border: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.22)); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; }',
+        '.dshoc-settingsection { display: flex; flex-direction: column; gap: 7px; }',
+        '.dshoc-settingsection + .dshoc-settingsection { border-top: 1px solid var(--dsw-alias-border-l2, rgba(127,127,127,.18)); padding-top: 9px; }',
+        '.dshoc-grouptitle { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; opacity: .45; padding: 0 2px 1px; }',
+        '.dshoc-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; min-width: 0; }',
+        '.dshoc-check input { margin: 0; width: 14px; height: 14px; cursor: pointer; accent-color: var(--dsw-alias-state-business-primary, #4aa3ff); flex: 0 0 auto; }',
+        '.dshoc-settingrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+        '.dshoc-settingrow .dshoc-check { flex: 1 1 auto; }',
+        '.dshoc-subcheck { padding-left: 22px; }',
+        '.dshoc-check.dshoc-disabled { opacity: .45; cursor: default; }',
+        '.dshoc-check.dshoc-disabled input { cursor: default; }',
+        '.dshoc-testicon { appearance: none; -webkit-appearance: none; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 24px; height: 24px; padding: 0; border: 1px solid var(--dsw-alias-border-l4, rgba(127,127,127,.24)); border-radius: 6px; background: transparent; color: inherit; cursor: pointer; opacity: .72; }',
+        '.dshoc-testicon:hover:not(:disabled) { opacity: 1; background: var(--dsw-alias-interactive-bg-hover, rgba(127,127,127,.18)); }',
+        '.dshoc-testicon:focus-visible { outline: var(--dsw-focus-ring-width, 2px) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary, #4aa3ff)); outline-offset: 1px; }',
+        '.dshoc-testicon:disabled { opacity: .25; cursor: default; }',
+        '.dshoc-testicon svg { width: 15px; height: 15px; }',
+        '.dshoc-test { appearance: none; -webkit-appearance: none; display: block; box-sizing: border-box; align-self: stretch; margin-top: 2px; border: 1px solid var(--dsw-alias-border-l4, rgba(127,127,127,.24)); background: var(--dsw-alias-interactive-bg-hover, rgba(127,127,127,.1)); color: inherit; border-radius: 6px; padding: 5px 8px; font: inherit; font-size: 11.5px; line-height: 1.3; cursor: pointer; text-align: center; }',
+        '.dshoc-test:hover { background: var(--dsw-alias-interactive-bg-active, rgba(127,127,127,.2)); }',
+        '.dshoc-test:focus-visible { outline: var(--dsw-focus-ring-width, 2px) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary, #4aa3ff)); outline-offset: 1px; }',
+        '.dshoc-hint { font-size: 10.5px; line-height: 1.4; opacity: .45; padding: 0 2px; }',
+        '.dshoc-dangerbtn { appearance: none; -webkit-appearance: none; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; box-sizing: border-box; border: 1px solid rgba(229,72,77,.35); background: rgba(229,72,77,.08); color: var(--dsw-alias-state-error-primary, #e5484d); border-radius: 6px; padding: 6px 8px; font: inherit; font-size: 11.5px; line-height: 1.3; cursor: pointer; text-align: center; }',
+        '.dshoc-dangerbtn:hover:not(:disabled) { background: rgba(229,72,77,.16); }',
+        '.dshoc-dangerbtn:focus-visible { outline: var(--dsw-focus-ring-width, 2px) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary, #4aa3ff)); outline-offset: 1px; }',
+        '.dshoc-dangerbtn:disabled { opacity: .4; cursor: default; }',
+        '.dshoc-dangerbtn svg { flex: 0 0 auto; }',
+        '.dshoc-status { font-size: 10.5px; line-height: 1.4; opacity: .6; padding: 0 2px; }',
+        '.dshoc-status.dshoc-status-error { color: var(--dsw-alias-state-error-primary, #e5484d); opacity: 1; }',
+        '.dshoc-status.dshoc-status-warn { color: var(--dsw-alias-state-warn-primary, #f5b800); opacity: .9; }',
+        '.dshoc-hint.dshoc-warn { color: var(--dsw-alias-state-warn-primary, #f5b800); opacity: .85; }',
+        '.dshoc-iconbtn[aria-expanded="true"] { opacity: 1; background: rgba(127,127,127,.14); }',
         '.dshoc-caret { flex: 0 0 auto; width: 10px; font-size: 10px; line-height: 1; opacity: .5; transition: transform .12s; }',
         '.dshoc-caret.dshoc-caret-open { transform: rotate(90deg); }',
         '.dshoc-count { flex: 0 0 auto; font-size: 11px; opacity: .42; }',
@@ -371,9 +405,15 @@ window.__ModuleLoader__.load({
       var version = tick[0];
       var bump = tick[1];
 
+      // Панель настроек закрывается только повторным нажатием шестерёнки:
+      // клик по сессии или другому месту сайдбара её не сбрасывает.
       var panelState = React.useState(false);
       var panelOpen = panelState[0];
       var setPanelOpen = panelState[1];
+
+      var purgeState = React.useState(null);
+      var purge = purgeState[0];
+      var setPurge = purgeState[1];
 
       var orderBox = React.useRef(null);
       if (orderBox.current === null) orderBox.current = readJson(ORDER_KEY, {});
@@ -392,10 +432,6 @@ window.__ModuleLoader__.load({
       var deletedBox = React.useRef(null);
       if (deletedBox.current === null) deletedBox.current = readJson(DELETED_KEY, {});
 
-      var panelRef = React.useRef(null);
-      var panelPos = React.useRef({ left: 16, top: 40, width: 200 });
-      var rootRef = React.useRef(null);
-      var gearRef = React.useRef(null);
       var audioBox = React.useRef(null);
       var previousStatus = React.useRef(null);
       var dragId = React.useRef(null);
@@ -403,19 +439,6 @@ window.__ModuleLoader__.load({
       var dropState = React.useState(null);
       var dropTarget = dropState[0];
       var setDropTarget = dropState[1];
-
-      React.useEffect(function () {
-        if (!panelOpen) return;
-        function onDown(event) {
-          var panel = panelRef.current;
-          var gear = gearRef.current;
-          if (panel && panel.contains(event.target)) return;
-          if (gear && gear.contains(event.target)) return;
-          setPanelOpen(false);
-        }
-        document.addEventListener('mousedown', onDown);
-        return function () { document.removeEventListener('mousedown', onDown); };
-      }, [panelOpen]);
 
       React.useEffect(function () {
         var map = statuses || new Map();
@@ -489,6 +512,62 @@ window.__ModuleLoader__.load({
 
       var movedMap = movedBox.current;
       var deletedMap = deletedBox.current;
+
+      // Текущий открытый черновик. Только его показываем строкой «Новая
+      // сессия»: остальные blank-сессии — служебные и не должны удерживать
+      // проект в списке.
+      var currentBlankId = null;
+      Object.keys(byId).some(function (sessionId) {
+        var candidate = byId[sessionId];
+        if (candidate && candidate.blank === true && candidate.retainedBy && candidate.retainedBy.mainView > 0) {
+          currentBlankId = sessionId;
+          return true;
+        }
+        return false;
+      });
+
+      /**
+       * Видимость сессии в списке. Архивные видны только при включённой
+       * галочке, субагентские и удалённые — никогда, а из пустых черновиков —
+       * только текущий.
+       */
+      function sessionVisible(session) {
+        if (!session) return false;
+        if (deletedMap[session.id] === true) return false;
+        if (session.origin === 'subagent') return false;
+        if (session.blank === true && session.id !== currentBlankId) return false;
+        if (!showArchived && archivedIds.indexOf(session.id) >= 0) return false;
+        return true;
+      }
+
+      // Считаем только реальные сессии из каталога: в archivedSessionIds
+      // могут остаться служебные записи без файлов и без строки в списке.
+      function archivedSession(id) {
+        var session = byId[id];
+        if (!id || !session || session.blank || session.origin === 'subagent' || deletedMap[id] === true) return null;
+        return session;
+      }
+      // В пакет входят ВСЕ реальные архивные сессии, включая ту, что сейчас
+      // открыта: хост сам решает по каждой, можно ли её удалить. Раньше
+      // «текущая» вычислялась на клиенте и могла быть ошибочной — тогда пакет
+      // пропускал удаляемую сессию, а одиночная корзина её удаляла.
+      var archivedToPurge = archivedIds.filter(function (id) {
+        return !!archivedSession(id);
+      });
+      var archivedCount = archivedToPurge.length;
+      var purgeBusy = !!(purge && purge.busy);
+      var purgeStatusText = '';
+      if (purge && !purge.busy) {
+        var purgeParts = [];
+        if (purge.failed > 0) purgeParts.push('не удалось ' + purge.failed);
+        if (purge.skipped > 0) purgeParts.push('в памяти DSH ' + purge.skipped);
+        if (purgeParts.length > 0) {
+          purgeStatusText = 'Удалено ' + purge.deleted + ', ' + purgeParts.join(', ');
+          if (purge.skipped > 0) purgeStatusText += ' — перезапустите DSH, чтобы удалить';
+        } else {
+          purgeStatusText = 'Удалено ' + purge.deleted + ' ' + sessionWord(purge.deleted);
+        }
+      }
       var owners = {};
       var displayMembers = {};
       items.forEach(function (workspaceItem) {
@@ -501,17 +580,26 @@ window.__ModuleLoader__.load({
         displayMembers[target].push(sessionId);
       });
 
+      function visibleMembers(key) {
+        return (displayMembers[key] || []).filter(function (sessionId) {
+          return sessionVisible(byId[sessionId]);
+        });
+      }
+
       // Сессии, которых нет ни в одном проекте: остаются после удаления проекта
       // или приходят из прошлых версий. Без этой группы они невидимы.
       var orphanIds = Object.keys(byId).filter(function (sessionId) {
         var session = byId[sessionId];
-        return session && !session.blank && session.origin !== 'subagent' && owners[sessionId] === undefined && deletedMap[sessionId] !== true;
+        return session && owners[sessionId] === undefined && sessionVisible(session);
       }).sort(function (left, right) {
         return (byId[right].updatedAt || 0) - (byId[left].updatedAt || 0);
       });
 
       function sessionCount(ids) {
-        return ids.filter(function (id) { return byId[id] && !byId[id].blank && deletedMap[id] !== true; }).length;
+        return ids.filter(function (id) {
+          var session = byId[id];
+          return session && deletedMap[id] !== true && session.origin !== 'subagent' && (!session.blank || id === currentBlankId);
+        }).length;
       }
 
       function toggleGroup(key, expanded) {
@@ -559,33 +647,142 @@ window.__ModuleLoader__.load({
         });
       }
 
-      function addWorkspace() {
-        var pick = props.pickDirectory;
-        var create = props.createWorkspace;
-        if (!pick || !create) return;
-        Promise.resolve().then(pick).then(function (path) {
-          if (!path) return undefined;
-          return create(path);
-        }).catch(function (reason) {
-          console.warn('sidebar-opencode: не удалось добавить проект:', reason);
+      /**
+       * Свод результатов массового удаления (одиночные вызовы или пакетный
+       * резерв): отметка всех успешно удалённых id в localStorage, чтобы строки
+       * исчезли сразу.
+       */
+      function finishPurgeResults(entries) {
+        var deleted = 0;
+        var failed = 0;
+        var skipped = 0;
+        var errors = [];
+        var skippedMessages = [];
+        var warnings = [];
+        entries.forEach(function (entry) {
+          var result = entry && entry.result !== undefined ? entry.result : entry;
+          var id = (entry && entry.sessionId) || (result && result.sessionId) || '';
+          if (result && result.ok === true) {
+            deleted += 1;
+            if (id) deletedBox.current[id] = true;
+            if (result.warnings && result.warnings.length > 0) {
+              warnings.push((id ? id + ': ' : '') + result.warnings.join('; '));
+            }
+          } else if (result && result.code === 'live') {
+            // Сессия загружена в память. Это не поломка: просто её нельзя
+            // удалить без перезапуска DSH, поэтому не пугаем модальным окном.
+            skipped += 1;
+            skippedMessages.push((id ? id + ': ' : '') + (result.message || 'Сессия загружена в память.'));
+          } else {
+            failed += 1;
+            errors.push((id ? id + ': ' : '') + ((result && result.message) || 'неизвестная ошибка'));
+          }
         });
+        if (deleted > 0) {
+          writeJson(DELETED_KEY, deletedBox.current);
+          bump(version + 1);
+        }
+        setPurge({
+          busy: false,
+          total: entries.length,
+          done: entries.length,
+          deleted: deleted,
+          failed: failed,
+          skipped: skipped,
+          errors: errors,
+          skippedMessages: skippedMessages,
+          warnings: warnings
+        });
+        if (failed > 0) {
+          var lines = errors.slice(0, 8);
+          if (errors.length > 8) lines.push('… и ещё ' + (errors.length - 8));
+          window.alert('Не удалось удалить ' + failed + ' из ' + entries.length + ':\n' + lines.join('\n'));
+        } else if (warnings.length > 0) {
+          window.alert('Удалено ' + deleted + ', но: ' + warnings.slice(0, 5).join('; '));
+        }
+      }
+
+      function purgeAllArchived() {
+        var ids = archivedToPurge.slice();
+        var batch = props.deleteArchivedSessions;
+        var single = props.deleteArchivedSession;
+        if (ids.length === 0 || (typeof batch !== 'function' && typeof single !== 'function')) return;
+        var confirmed = window.confirm(
+          'Удалить архивные сессии (' + ids.length + ')?\n\n' +
+          'Журналы, кэш проекций и записи в реестре будут стёрты. Восстановить нельзя.'
+        );
+        if (!confirmed) return;
+
+        setPurge({ busy: true, total: ids.length, done: 0, deleted: 0, failed: 0, skipped: 0, errors: [], skippedMessages: [], warnings: [] });
+
+        // Кнопка «Удалить архивные» делает ровно то же, что корзина у строки:
+        // по одному вызову на каждую архивную сессию. Пакетный маршрут хоста
+        // остаётся резервом для композиций, где одиночного вызова нет.
+        if (typeof single === 'function') {
+          runSequential();
+          return;
+        }
+
+        if (typeof batch === 'function') {
+          Promise.resolve(batch(ids)).then(function (response) {
+            if (!response || !Array.isArray(response.results)) {
+              finishPurgeResults(ids.map(function (id) {
+                return { sessionId: id, result: response || { ok: false, message: 'Хост не вернул результат удаления.' } };
+              }));
+              return;
+            }
+            var entries = response.results.slice();
+            var seen = {};
+            entries.forEach(function (entry) {
+              var answer = entry && entry.result !== undefined ? entry.result : entry;
+              var id = (entry && entry.sessionId) || (answer && answer.sessionId);
+              if (id) seen[id] = true;
+            });
+            ids.forEach(function (id) {
+              if (!seen[id]) entries.push({ sessionId: id, result: { ok: false, message: 'Хост не вернул результат для этой сессии.' } });
+            });
+            finishPurgeResults(entries);
+          }).catch(function (error) {
+            finishPurgeResults(ids.map(function (id) {
+              return { sessionId: id, result: { ok: false, message: error && error.message ? error.message : String(error) } };
+            }));
+          });
+          return;
+        }
+
+        function runSequential() {
+          var results = [];
+          var index = 0;
+          function next() {
+            if (index >= ids.length) {
+              finishPurgeResults(results);
+              return;
+            }
+            var id = ids[index++];
+            Promise.resolve(single(id)).then(function (result) {
+              results.push({ sessionId: id, result: result });
+            }, function (error) {
+              results.push({ sessionId: id, result: { ok: false, message: error && error.message ? error.message : String(error) } });
+            }).then(function () {
+              setPurge({ busy: true, total: ids.length, done: results.length, deleted: 0, failed: 0, skipped: 0, errors: [], skippedMessages: [], warnings: [] });
+              next();
+            });
+          }
+          next();
+        }
       }
 
       var children = [];
 
       children.push(h('div', { className: 'dshoc-head', key: 'head' },
         h('span', null, 'Проекты'),
-        h('span', { className: 'dshoc-headactions', ref: gearRef },
-          iconButton({
-            key: 'addws',
-            className: 'dshoc-iconbtn',
-            title: 'Добавить проект',
-            onClick: function () { addWorkspace(); }
-          }, iconFolderPlus()),
+        h('span', { className: 'dshoc-headactions' },
           iconButton({
             key: 'gear',
             className: 'dshoc-iconbtn',
-            title: 'Настройки списка',
+            title: panelOpen ? 'Закрыть настройки списка' : 'Настройки списка',
+            'aria-expanded': panelOpen ? 'true' : 'false',
+            'aria-controls': 'dshoc-settings-panel',
             onClick: function () { setPanelOpen(!panelOpen); }
           }, iconGear())
         )
@@ -595,88 +792,127 @@ window.__ModuleLoader__.load({
         children.push(h('div', {
           className: 'dshoc-panel',
           key: 'panel',
-          ref: panelRef,
-          style: {}
+          id: 'dshoc-settings-panel',
+          role: 'region',
+          'aria-label': 'Настройки списка'
         },
-          h('label', { className: 'dshoc-check', key: 'sound' },
-            h('input', {
-              type: 'checkbox',
-              checked: soundBox.current,
-              onChange: function () {
-                soundBox.current = !soundBox.current;
-                writeJson(SOUND_KEY, soundBox.current);
-                bump(version + 1);
-              }
-            }),
-            h('span', null, 'Звук готовности')
+          h('div', { className: 'dshoc-settingsection', key: 'list' },
+            h('div', { className: 'dshoc-grouptitle', key: 'title' }, 'Список'),
+            h('div', { className: 'dshoc-expandrow', key: 'expandrow' },
+              h('button', {
+                type: 'button',
+                className: 'dshoc-test',
+                title: 'Развернуть все проекты',
+                onClick: function () { setAllGroups(true); }
+              }, 'Развернуть все'),
+              h('button', {
+                type: 'button',
+                className: 'dshoc-test',
+                title: 'Свернуть все проекты',
+                onClick: function () { setAllGroups(false); }
+              }, 'Свернуть все')
+            )
           ),
-          h('label', { className: 'dshoc-check', key: 'alert' },
-            h('input', {
-              type: 'checkbox',
-              checked: alertBox.current,
-              onChange: function () {
-                alertBox.current = !alertBox.current;
-                writeJson(ALERT_KEY, alertBox.current);
-                bump(version + 1);
-              }
-            }),
-            h('span', null, 'Звук, когда ждёт ответа')
+          h('div', { className: 'dshoc-settingsection', key: 'archive' },
+            h('div', { className: 'dshoc-grouptitle', key: 'title' }, 'Архив'),
+            h('label', { className: 'dshoc-check', key: 'arch' },
+              h('input', {
+                type: 'checkbox',
+                checked: showArchived,
+                onChange: function () {
+                  archivedBox.current = !archivedBox.current;
+                  writeJson(ARCHIVED_KEY, archivedBox.current);
+                  bump(version + 1);
+                }
+              }),
+              h('span', null, 'Показывать архивные')
+            ),
+            h('button', {
+              type: 'button',
+              className: 'dshoc-dangerbtn',
+              title: typeof props.deleteArchivedSessions !== 'function' && typeof props.deleteArchivedSession !== 'function'
+                ? 'Хост не поддерживает удаление — перезапустите DSH'
+                : archivedCount > 0 ? 'Удалить все архивные сессии навсегда' : 'В архиве нет сессий',
+              disabled: archivedCount === 0 || purgeBusy || (typeof props.deleteArchivedSessions !== 'function' && typeof props.deleteArchivedSession !== 'function'),
+              onClick: function () { purgeAllArchived(); }
+            },
+              iconTrash(),
+              h('span', null, purgeBusy
+                ? 'Удаление… ' + (purge.done || 0) + '/' + (purge.total || archivedCount)
+                : 'Удалить архивные' + (archivedCount > 0 ? ' (' + archivedCount + ')' : ''))
+            ),
+            h('div', { className: 'dshoc-hint', key: 'hint' }, 'Безвозвратно: журналы, кэш и запись в реестре.'),
+            purgeStatusText !== '' ? h('div', {
+              className: 'dshoc-status' + (purge.failed > 0 ? ' dshoc-status-error' : (purge.skipped > 0 ? ' dshoc-status-warn' : '')),
+              key: 'status'
+            }, purgeStatusText) : null
           ),
-          h('label', { className: 'dshoc-check', key: 'repeat' },
-            h('input', {
-              type: 'checkbox',
-              checked: repeatBox.current,
-              onChange: function () {
-                repeatBox.current = !repeatBox.current;
-                writeJson(REPEAT_KEY, repeatBox.current);
-                bump(version + 1);
-              }
-            }),
-            h('span', null, 'Повторять напоминание')
-          ),
-          h('label', { className: 'dshoc-check', key: 'arch' },
-            h('input', {
-              type: 'checkbox',
-              checked: showArchived,
-              onChange: function () {
-                archivedBox.current = !archivedBox.current;
-                writeJson(ARCHIVED_KEY, archivedBox.current);
-                bump(version + 1);
-              }
-            }),
-            h('span', null, 'Показывать архивные')
-          ),
-          h('div', { className: 'dshoc-expandrow', key: 'expandrow' },
-            iconButton({
-              className: 'dshoc-test',
-              title: 'Развернуть все проекты',
-              onClick: function () { setAllGroups(true); }
-            }, 'Развернуть все'),
-            iconButton({
-              className: 'dshoc-test',
-              title: 'Свернуть все проекты',
-              onClick: function () { setAllGroups(false); }
-            }, 'Свернуть все')
-          ),
-          h('div', { className: 'dshoc-expandrow', key: 'testrow' },
-            iconButton({
-              className: 'dshoc-test',
-              title: 'Сигнал завершения хода',
-              onClick: function () { playChime(audioBox, SOUND_SRC); bump(version + 1); }
-            }, 'Готовность'),
-            iconButton({
-              className: 'dshoc-test',
-              title: 'Сигнал «сессия ждёт ответа»',
-              onClick: function () { playAlert(audioBox, SOUND_SRC); bump(version + 1); }
-            }, 'Ждёт ответа')
-          ),
-          h('div', { className: 'dshoc-diag', key: 'hint' }, 'Вопрос: сигнал сразу, затем каждые ' + Math.round(REPEAT_MS / 1000) + ' с.'),
-          h('div', { className: 'dshoc-diag', key: 'diag' }, 'AudioContext: ' + (audioContext ? audioContext.state : 'не создан'))
+          h('div', { className: 'dshoc-settingsection', key: 'sound' },
+            h('div', { className: 'dshoc-grouptitle', key: 'title' }, 'Уведомления'),
+            h('div', { className: 'dshoc-settingrow', key: 'sound' },
+              h('label', { className: 'dshoc-check' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: soundBox.current,
+                  onChange: function () {
+                    soundBox.current = !soundBox.current;
+                    writeJson(SOUND_KEY, soundBox.current);
+                    bump(version + 1);
+                  }
+                }),
+                h('span', null, 'Звук готовности')
+              ),
+              h('button', {
+                type: 'button',
+                className: 'dshoc-testicon',
+                title: soundBox.current ? 'Проверить сигнал готовности' : 'Включите звук готовности, чтобы проверить сигнал',
+                'aria-label': 'Проверить сигнал готовности',
+                disabled: !soundBox.current,
+                onClick: function () { playChime(audioBox, SOUND_SRC); }
+              }, iconSpeaker())
+            ),
+            h('div', { className: 'dshoc-settingrow', key: 'alert' },
+              h('label', { className: 'dshoc-check' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: alertBox.current,
+                  onChange: function () {
+                    alertBox.current = !alertBox.current;
+                    writeJson(ALERT_KEY, alertBox.current);
+                    bump(version + 1);
+                  }
+                }),
+                h('span', null, 'Звук, когда ждёт ответа')
+              ),
+              h('button', {
+                type: 'button',
+                className: 'dshoc-testicon',
+                title: alertBox.current ? 'Проверить сигнал «ждёт ответа»' : 'Включите звук ожидания, чтобы проверить сигнал',
+                'aria-label': 'Проверить сигнал «ждёт ответа»',
+                disabled: !alertBox.current,
+                onClick: function () { playAlert(audioBox, SOUND_SRC); }
+              }, iconSpeaker())
+            ),
+            h('label', {
+              className: 'dshoc-check dshoc-subcheck' + (alertBox.current ? '' : ' dshoc-disabled'),
+              key: 'repeat',
+              title: alertBox.current ? '' : 'Сначала включите звук ожидания'
+            },
+              h('input', {
+                type: 'checkbox',
+                checked: repeatBox.current,
+                disabled: !alertBox.current,
+                onChange: function () {
+                  repeatBox.current = !repeatBox.current;
+                  writeJson(REPEAT_KEY, repeatBox.current);
+                  bump(version + 1);
+                }
+              }),
+              h('span', null, 'Повторять напоминание')
+            ),
+            h('div', { className: 'dshoc-hint', key: 'hint' }, 'Сигнал ожидания — сразу, затем каждые ' + Math.round(REPEAT_MS / 1000) + ' с, до ' + REPEAT_MAX + ' раз.')
+          )
         ));
-      }
-
-      if (!items.length && orphanIds.length === 0) {
-        children.push(h('div', { className: 'dshoc-empty', key: 'empty' }, phase === 'ready' ? 'Нет проектов' : 'Загрузка…'));
       }
 
       // Группа для сессий без проекта (после удаления проекта или из старых данных).
@@ -686,13 +922,36 @@ window.__ModuleLoader__.load({
         groups.push({ workspaceId: ORPHAN_KEY, title: 'Без проекта', path: '', synthetic: true });
       }
 
-      groups.forEach(function (workspace) {
+      // Проект без видимых сессий не рисуется: пустой проект, проект только
+      // с архивом (при выключенной галочке) и проект только с чужими blank.
+      var visibleGroups = groups.filter(function (workspace) {
+        return visibleMembers(workspace.workspaceId).length > 0;
+      });
+
+      if (visibleGroups.length === 0) {
+        var emptyHint = null;
+        if (phase === 'ready') {
+          if (!showArchived && archivedCount > 0) {
+            emptyHint = 'В архиве есть сессии — включите «Показывать архивные» в настройках.';
+          } else if (groups.length === 0) {
+            emptyHint = 'Добавить проект можно на экране новой сессии.';
+          }
+        }
+        children.push(h('div', { className: 'dshoc-empty', key: 'empty' },
+          phase !== 'ready'
+            ? 'Загрузка…'
+            : groups.length > 0 ? 'Нет проектов с сессиями' : 'Нет проектов',
+          emptyHint ? h('div', { className: 'dshoc-emptyhint', key: 'hint' }, emptyHint) : null
+        ));
+      }
+
+      visibleGroups.forEach(function (workspace) {
         var key = workspace.workspaceId;
         var name = workspace.title || workspace.path || 'Проект';
         var expanded = expandBox.current[key] !== false;
         var total = sessionCount(displayMembers[key] || []);
         // Сколько сессий проекта стоят и ждут ответа: видно даже в свёрнутой группе.
-        var waitingTotal = (displayMembers[key] || []).filter(function (id) { return pendingById[id] !== undefined; }).length;
+        var waitingTotal = visibleMembers(key).filter(function (id) { return pendingById[id] !== undefined; }).length;
 
         children.push(h('div', {
           key: 'ws:' + key,
@@ -744,7 +1003,7 @@ window.__ModuleLoader__.load({
           }, '? ' + waitingTotal) : null,
           total > 0 ? h('span', {
             className: 'dshoc-count',
-            title: 'Сессий: ' + total + ' (архивные тоже считаются)'
+            title: 'Сессий: ' + total + ' (архивные и новый черновик тоже считаются)'
           }, String(total)) : null,
           workspace.synthetic === true ? null : iconButton({
             className: 'dshoc-add',
@@ -762,12 +1021,11 @@ window.__ModuleLoader__.load({
         var rows = [];
         orderedIds(memberIds, orderBox.current[key]).forEach(function (id) {
           var session = byId[id];
-          if (!session || session.blank) return;
-          if (deletedMap[id] === true) return;
+          if (!sessionVisible(session)) return;
+          var isBlank = session.blank === true;
           var isArchived = archivedIds.indexOf(id) >= 0;
           var isCurrent = !!(session.retainedBy && session.retainedBy.mainView > 0);
           var isMoved = movedMap[id] === key && owners[id] !== key;
-          if (isArchived && !showArchived) return;
 
           var status = statuses ? statuses.get(id) : null;
           var waitingKind = pendingById[id] || null;
@@ -778,17 +1036,18 @@ window.__ModuleLoader__.load({
           var waitLabel = waitingKind ? (WAIT_LABEL[waitingKind] || 'Ждёт вашего ответа') : '';
 
           var indicator;
-          if (waitingKind) indicator = h('span', { className: 'dshoc-wait', title: waitLabel, 'aria-label': waitLabel }, '?');
+          if (isBlank) indicator = h('span', { className: 'dshoc-dot', style: { background: 'transparent' } });
+          else if (waitingKind) indicator = h('span', { className: 'dshoc-wait', title: waitLabel, 'aria-label': waitLabel }, '?');
           else if (running) indicator = h('span', { className: 'dshoc-spin' });
           else if (done) indicator = h('span', { className: 'dshoc-dot', style: { background: '#46a758' } });
           else indicator = h('span', { className: 'dshoc-dot', style: { background: 'transparent' } });
 
           rows.push(h('div', {
             key: id,
-            className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : '') + (isCurrent ? ' dshoc-current' : '') + (waitingKind ? ' dshoc-waiting' : ''),
-            draggable: workspace.synthetic !== true && !isArchived,
+            className: 'dshoc-row' + (isArchived ? ' dshoc-archived' : '') + (isCurrent ? ' dshoc-current' : '') + (isBlank ? ' dshoc-blank' : '') + (waitingKind ? ' dshoc-waiting' : ''),
+            draggable: workspace.synthetic !== true && !isArchived && !isBlank,
             onDragStart: function (event) {
-              if (workspace.synthetic === true || isArchived) return;
+              if (workspace.synthetic === true || isArchived || isBlank) return;
               dragId.current = id;
               dragWorkspace.current = key;
               if (event.dataTransfer) {
@@ -797,7 +1056,7 @@ window.__ModuleLoader__.load({
               }
             },
             onDragOver: function (event) {
-              if (!isArchived && dragId.current) event.preventDefault();
+              if (!isArchived && !isBlank && dragId.current) event.preventDefault();
             },
             onDragEnd: function () {
               dragId.current = null;
@@ -806,7 +1065,7 @@ window.__ModuleLoader__.load({
             },
             onDrop: function (event) {
               event.preventDefault();
-              if (isArchived) return;
+              if (isArchived || isBlank) return;
               var from = dragId.current;
               var to = id;
               var fromWorkspace = dragWorkspace.current;
@@ -840,17 +1099,17 @@ window.__ModuleLoader__.load({
               if (isArchived) { if (unarchiveSession) unarchiveSession(id); return; }
               if (open) open(id);
             },
-            title: waitLabel ? waitLabel + (session.title ? ': ' + session.title : '') : (session.title || '')
+            title: isBlank ? 'Новая сессия' : waitLabel ? waitLabel + (session.title ? ': ' + session.title : '') : (session.title || '')
           },
             indicator,
-            h('span', { className: 'dshoc-name' }, session.title || 'Без названия'),
+            h('span', { className: 'dshoc-name' }, isBlank ? 'Новая сессия' : (session.title || 'Без названия')),
             isMoved ? h('span', {
               key: 'mv',
               className: 'dshoc-moved',
               title: 'Строка показана здесь вручную; рабочий каталог сессии не менялся'
             }, '⇢') : null,
-            h('span', { className: 'dshoc-time' }, relativeTime(session.updatedAt, now)),
-            iconButton({
+            isBlank ? null : h('span', { className: 'dshoc-time' }, relativeTime(session.updatedAt, now)),
+            isBlank ? null : iconButton({
               key: 'restore-archive',
               className: 'dshoc-iconbtn' + (isArchived ? ' dshoc-always' : ''),
               title: isArchived ? 'Вернуть из архива' : 'В архив',
@@ -899,7 +1158,7 @@ window.__ModuleLoader__.load({
         }, rows));
       });
 
-      return h('div', { className: 'dshoc-root', ref: rootRef }, children);
+      return h('div', { className: 'dshoc-root' }, children);
     }
 
     var inject = ['slots', 'locale', 'sessions', 'workspaces', 'uiSession'];
@@ -918,6 +1177,48 @@ window.__ModuleLoader__.load({
           priority: -1000,
           locale: NS,
           inject: function () {
+            /**
+             * Один POST на маршрут удаления. batch=true означает массив
+             * sessionIds и ответ с per-session results; старый хост без
+             * batch-поддержки отвечает 404/405 и получает code no-batch,
+             * чтобы UI мог откатиться на последовательные одиночные вызовы.
+             */
+            function postPurge(body, batch) {
+              if (typeof window.fetch !== 'function') {
+                return Promise.resolve({ ok: false, message: 'Браузер не поддерживает fetch.' });
+              }
+              // Документно-относительный путь: страница может стоять под монтированием.
+              return window.fetch('api/session.purge', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(body)
+              }).then(function (response) {
+                return response.json().catch(function () { return null; }).then(function (answer) {
+                  if (response.ok && answer && Array.isArray(answer.results)) return answer;
+                  if (response.ok && answer && answer.ok === true) return answer;
+                  if (response.status === 401 || response.status === 403) {
+                    return { ok: false, message: 'Страница не авторизована. Обновите DSH (F5) и повторите.' };
+                  }
+                  if (response.status === 404 || response.status === 405) {
+                    return {
+                      ok: false,
+                      code: batch ? 'no-batch' : 'no-route',
+                      message: 'Хост не знает маршрут удаления. Перезапустите DSH, чтобы обновилась хост-половина @local/dsh-session-purge.'
+                    };
+                  }
+                  // Старый хост знает только { sessionId } и на пакет отвечает
+                  // 400. Даём UI шанс откатиться на одиночные вызовы без
+                  // перезапуска DSH; заодно это спасает пачку больше лимита.
+                  if (batch && response.status === 400) {
+                    return { ok: false, code: 'no-batch', message: (answer && answer.message) || 'Хост не принял пакет.' };
+                  }
+                  return { ok: false, message: (answer && answer.message) || ('HTTP ' + response.status) };
+                });
+              }, function (error) {
+                return { ok: false, message: error && error.message ? error.message : String(error) };
+              });
+            }
+
             return {
               hooks: {
                 sessions: sessions.list,
@@ -939,13 +1240,6 @@ window.__ModuleLoader__.load({
                   console.warn('session archive rejected:', reason);
                 });
               },
-              pickDirectory: function () {
-                var service = ctx.get('uiWorkspace');
-                return service ? service.pickDirectory() : Promise.resolve(null);
-              },
-              createWorkspace: function (path) {
-                return workspaces.create({ path: path });
-              },
               unarchiveSession: function (sessionId) {
                 var service = ctx.get('uiWorkspace');
                 if (!service) return;
@@ -954,28 +1248,10 @@ window.__ModuleLoader__.load({
                 });
               },
               deleteArchivedSession: function (targetId) {
-                if (typeof window.fetch !== 'function') {
-                  return Promise.resolve({ ok: false, message: 'Браузер не поддерживает fetch.' });
-                }
-                // Документно-относительный путь: страница может стоять под монтированием.
-                return window.fetch('api/session.purge', {
-                  method: 'POST',
-                  headers: { 'content-type': 'application/json' },
-                  body: JSON.stringify({ sessionId: targetId })
-                }).then(function (response) {
-                  return response.json().catch(function () { return null; }).then(function (body) {
-                    if (response.ok && body && body.ok === true) return body;
-                    if (response.status === 401 || response.status === 403) {
-                      return { ok: false, message: 'Страница не авторизована. Обновите DSH (F5) и повторите.' };
-                    }
-                    if (response.status === 404 || response.status === 405) {
-                      return { ok: false, message: 'Хост не знает маршрут удаления. Перезапустите DSH, чтобы обновилась хост-половина @local/dsh-session-purge.' };
-                    }
-                    return { ok: false, message: (body && body.message) || ('HTTP ' + response.status) };
-                  });
-                }, function (error) {
-                  return { ok: false, message: error && error.message ? error.message : String(error) };
-                });
+                return postPurge({ sessionId: targetId }, false);
+              },
+              deleteArchivedSessions: function (targetIds) {
+                return postPurge({ sessionIds: targetIds }, true);
               }
             };
           }

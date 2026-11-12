@@ -10,6 +10,7 @@
 | Исходники плагина | `C:/projects/DeepseekPlugins/plugins/<name>/` | одно место, git, не теряется при сносе приложения и проектов |
 | Шаблон | `C:/projects/DeepseekPlugins/template/plugin/` | одинаковый скелет у всех плагинов |
 | Состояние профиля | `~/.dsh/profiles/<profile>/package.json` и `cordis.patch.yml` | глобально, не в проекте |
+| Снимок профиля | `C:/projects/DeepseekPlugins/profile/<profile>/` | переносит выбор bundles и настройки без копирования кода DSH |
 | Само приложение | `%LOCALAPPDATA%/Programs/DeepSeek Harness/` | только для чтения: обновление заменяет `resources` |
 
 **Нельзя** класть плагины в `resources/app.asar` (упакованный архив), в
@@ -65,6 +66,12 @@ plugin_manager install_bundle target=C:/projects/DeepseekPlugins/plugins/dsh-<na
 - Перенос/переименование каталога -> junction в профиле битый; лечится
   `C:/projects/DeepseekPlugins/install.ps1 -Fix`, затем перезапуск.
 - Смена версии -> поднять `version` в `package.json`, переустановить.
+- Перенос на другой компьютер или новую версию DSH -> не копировать встроенные
+  плагины, а снять снимок профиля: `install.ps1 -Capture`, затем на новой машине
+  `install.ps1 -Restore`. Снимок хранит bundles и `cordis.patch.yml`; код
+  встроенных плагинов остаётся в DSH. Детали — `docs/TRANSFER.md`.
+- После изменения состава плагинов или настроек — обновить снимок
+  `install.ps1 -Capture`, иначе `-Restore` вернёт старое состояние.
 
 ## 6. Проверка после установки
 

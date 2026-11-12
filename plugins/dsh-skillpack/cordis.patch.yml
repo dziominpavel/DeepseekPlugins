@@ -1,0 +1,3 @@
+- insert:
+    - id: skillpack
+      name: '@local/dsh-skillpack'
